@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Phrase Master Pro - Detailed Stats</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    /* --- TEMEL AYARLAR --- */
+    :root {
+        --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        --card-bg: #ffffff;
+        --text-dark: #2c3e50;
+        --text-light: #95a5a6;
+        --accent-grad: linear-gradient(to right, #11998e, #38ef7d);
+        --badge-bg: #f1f2f6;
+        --shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+    body {
+        height: 100vh; width: 100vw; overflow: hidden;
+        background: var(--bg-gradient);
+        display: flex; justify-content: center; align-items: center;
+    }
+
+    /* --- EKRAN YÖNETİMİ --- */
+    .screen {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        transition: transform 0.4s ease-in-out, opacity 0.4s;
+        opacity: 0; pointer-events: none; transform: translateX(100%);
+    }
+    .screen.active { opacity: 1; pointer-events: all; transform: translateX(0); }
+
+    /* --- ANA KART (20CM / 750PX KARE) --- */
+    .main-card {
+        background: var(--card-bg);
+        width: 750px; height: 750px;
+        max-width: 95vw; max-height: 95vw;
+        border-radius: 40px;
+        box-shadow: var(--shadow);
+        position: relative;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+
+    /* --- DASHBOARD ELEMANLARI --- */
+    .settings-btn { position: absolute; top: 40px; left: 45px; font-size: 1.8rem; color: #b2bec3; background: none; border: none; cursor: pointer; transition: 0.2s; }
+    .settings-btn:hover { color: var(--text-dark); }
+
+    .top-label { position: absolute; top: 45px; right: 45px; font-weight: 800; font-size: 1rem; color: #b2bec3; letter-spacing: 1px; }
+
+    .set-badge { position: absolute; top: 15%; background: var(--badge-bg); color: var(--text-dark); padding: 10px 30px; border-radius: 50px; font-weight: 800; font-size: 1.1rem; letter-spacing: 0.5px; }
+
+    .content-center { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 20px; }
+    .icon-area { font-size: 6rem; color: var(--text-dark); margin-bottom: 30px; opacity: 0.9; }
+    .word-title { font-size: 3.5rem; font-weight: 800; color: var(--text-dark); line-height: 1.1; text-align: center; }
+
+    .btn-action { position: absolute; bottom: 60px; background: var(--accent-grad); color: white; border: none; padding: 22px 60px; border-radius: 60px; font-size: 1.4rem; font-weight: 800; letter-spacing: 1px; cursor: pointer; box-shadow: 0 10px 25px rgba(17, 153, 142, 0.4); display: flex; align-items: center; gap: 15px; transition: transform 0.2s; width: 80%; max-width: 400px; justify-content: center; }
+    .btn-action:active { transform: scale(0.96); }
+
+    .nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: white; border: none; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; color: var(--text-dark); z-index: 5; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: 0.2s; }
+    .nav-arrow:hover { transform: translateY(-50%) scale(1.1); }
+    .nav-prev { left: -30px; } .nav-next { right: -30px; }
+
+    .level-container { position: absolute; top: -60px; display: flex; gap: 10px; }
+    .lvl-btn { width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; color: #555; transition:0.2s;}
+    .lvl-btn.active { background: #2c3e50; color: white; transform: scale(1.1); }
+
+    .bottom-menu-container { position:absolute; bottom:20px; display:flex; gap:15px; opacity:0.6; }
+
+    /* --- OYUN EKRANI --- */
+    .quiz-layout { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; padding: 40px 30px; gap: 20px; }
+    .quiz-header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; color: #95a5a6; font-size: 1.2rem; }
+    .progress-bar-bg { width: 100%; height: 12px; background: #eee; border-radius: 10px; }
+    .progress-fill { height: 100%; background: #11998e; border-radius: 10px; width: 0%; transition: 0.3s; }
+    .question-section { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 20px; }
+    .q-text { font-size: 3rem; font-weight: 800; color: var(--text-dark); margin-bottom: 20px; text-align: center; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; margin-top: auto; margin-bottom: 20px; }
+    .opt-btn { background: #f8f9fa; border: 2px solid #eee; padding: 15px; border-radius: 25px; font-size: 1.4rem; font-weight: 600; color: var(--text-dark); cursor: pointer; transition: 0.1s; height: 140px; display: flex; align-items: center; justify-content: center; line-height: 1.3; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+    .opt-btn:active { transform: scale(0.98); background: #eef2f3; }
+
+    /* --- CONTENT BOX --- */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: center; justify-content: center; }
+    .modal-box { background: white; width: 90%; max-width: 600px; padding: 40px; border-radius: 30px; text-align: center; position: relative; max-height: 90vh; overflow-y: auto; }
+    .content-box { background: white; padding: 30px; border-radius: 30px; width: 750px; max-width: 95vw; max-height: 90vh; box-shadow: var(--shadow); overflow-y: auto; text-align: center; position: relative; }
+    
+    .back-btn { position: absolute; top: 25px; left: 25px; width: 50px; height: 50px; background: white; border-radius: 50%; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; z-index: 20; }
+    .btn-sm { background: #eee; border:none; padding:10px 20px; border-radius:20px; cursor:pointer; font-weight:600; color:#555; }
+    textarea, select, input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-size: 1rem; font-family: 'Poppins'; }
+    .settings-grid { display: grid; gap: 10px; }
+    .grammar-content { text-align: left; line-height: 1.6; color: #333; margin-top: 15px; }
+
+    /* --- YENİ İSTATİSTİK TASARIMI --- */
+    .stats-layout { display: flex; flex-direction: column; gap: 20px; padding-bottom: 20px; }
+    
+    /* 1. Grafikler */
+    .charts-wrapper { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
+    .chart-card { 
+        background: #f8f9fa; border-radius: 20px; padding: 15px; 
+        width: 48%; min-width: 250px; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+
+    /* 2. Seviye İlerleme Izgarası */
+    .levels-grid {
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive Grid */
+        gap: 15px;
+        width: 100%;
+    }
+
+    .level-stat-card {
+        background: white; border: 1px solid #eee; border-radius: 15px; 
+        padding: 15px; box-shadow: 0 3px 8px rgba(0,0,0,0.03);
+        display: flex; flex-direction: column; gap: 8px;
+    }
+
+    .ls-header { display: flex; justify-content: space-between; align-items: center; }
+    .ls-title { font-weight: 800; font-size: 1.1rem; color: #2c3e50; }
+    .ls-percent { font-weight: 600; font-size: 0.9rem; color: #11998e; background: #e0f2f1; padding: 2px 8px; border-radius: 10px; }
+
+    .ls-bar-bg { width: 100%; height: 10px; background: #f1f2f6; border-radius: 10px; overflow: hidden; }
+    .ls-bar-fill { height: 100%; background: linear-gradient(to right, #11998e, #38ef7d); width: 0%; border-radius: 10px; transition: width 0.5s; }
+
+    .ls-info { font-size: 0.85rem; color: #95a5a6; display: flex; justify-content: space-between; }
+    .ls-info b { color: #555; }
+
+    /* API Kutusu */
+    .api-box {
+        background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 15px;
+        text-align: left; font-family: monospace; font-size: 0.8rem;
+        margin-top: 10px;
+    }
+    .api-code { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 5px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+    <div id="menuScreen" class="screen active">
+        <div class="main-card">
+            <div id="levelTabsContainer" class="level-container"></div>
+            <button class="nav-arrow nav-prev" onclick="navCard(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <button class="nav-arrow nav-next" onclick="navCard(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            <button class="settings-btn" onclick="openSettings()"><i class="fa-solid fa-gear"></i></button>
+            <div class="top-label" id="modeDisplay">🇬🇧 > 🇹🇷</div>
+            <div class="set-badge" id="setLabel">SET 1</div>
+            <div class="content-center">
+                <div class="icon-area"><i class="fa-solid fa-pen-nib" id="mainIcon"></i></div>
+                <div class="word-title" id="mainTitle">Loading...</div>
+            </div>
+            <button id="btnStart" class="btn-action" onclick="startGame(viewIndex)">BAŞLA <i class="fa-solid fa-play"></i></button>
+        </div>
+        <div class="bottom-menu-container">
+            <button class="btn-sm" onclick="show('importScreen')">+ Ekle</button>
+            <button class="btn-sm" onclick="showStatsScreen()">İstatistik</button>
+            <button class="btn-sm" onclick="toggleGameMode()">Mod</button>
+            <button class="btn-sm" onclick="toggleEditListMode()">Liste</button>
+        </div>
+        <div id="mistakesAlert" style="position:absolute; bottom:80px; z-index:20; display:none;">
+             <button class="btn-sm" style="background:#ff7675; color:white;" onclick="startMistakeGame()">⚠️ Hataları Çöz</button>
+        </div>
+    </div>
+
+    <div id="gameScreen" class="screen">
+        <div class="main-card">
+            <button class="back-btn" onclick="quitGame()"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="quiz-layout">
+                <div class="quiz-header">
+                    <span id="gameSetInfo">SET 1</span><span>Puan: <span id="scoreIndicator">0</span></span>
+                </div>
+                <div class="progress-bar-bg"><div id="progressBar" class="progress-fill"></div></div>
+                <div class="question-section">
+                    <div id="qText" class="q-text">Word</div>
+                    <button onclick="readQuestion()" style="width:60px; height:60px; border-radius:50%; background:#2c3e50; color:white; border:none; font-size:1.5rem; cursor:pointer;"><i class="fa-solid fa-volume-high"></i></button>
+                    <div id="feedbackContainer" style="margin-top:20px; min-height:40px; display:flex; flex-direction:column; align-items:center; gap:10px;">
+                        <div id="feedbackMsg" style="font-weight:bold; font-size:1.2rem;"></div>
+                        <button id="grammarBtn" class="btn-sm" style="background:#3498db; color:white; display:none;" onclick="openCurrentGrammar()">📘 Konu Anlatımına Bak</button>
+                    </div>
+                </div>
+                <div id="optionsBox" class="options-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultScreen" class="screen">
+        <div class="main-card">
+            <i class="fa-solid fa-trophy" style="font-size:6rem; color:#f1c40f; margin-bottom:20px;"></i>
+            <h1 id="resultTitle" style="font-size:3rem; margin-bottom:10px;">Harika!</h1>
+            <p id="resultMessage" style="font-size:1.5rem; color:#7f8c8d; margin-bottom:40px;"></p>
+            <button id="nextSetBtn" class="btn-action" style="position:relative; bottom:auto; margin-bottom:20px;" onclick="goToNextSet()">Sonraki Set <i class="fa-solid fa-forward"></i></button>
+            <div style="display:flex; gap:15px;">
+                <button class="btn-sm" onclick="retrySet()">Tekrarla</button>
+                <button class="btn-sm" onclick="showMenu()">Menü</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="statsScreen" class="screen">
+        <button class="back-btn" onclick="showMenu()"><i class="fa-solid fa-arrow-left"></i></button>
+        <div class="content-box">
+            <h2 style="margin-bottom:20px; color:#2c3e50;">İstatistikler</h2>
+            <div class="stats-layout">
+                
+                <div class="charts-wrapper">
+                    <div class="chart-card">
+                        <canvas id="chartET"></canvas>
+                        <p style="margin-top:10px; font-weight:bold; color:#555;">🇬🇧 İng > Tür</p>
+                    </div>
+                    <div class="chart-card">
+                        <canvas id="chartTE"></canvas>
+                        <p style="margin-top:10px; font-weight:bold; color:#555;">🇹🇷 Tür > İng</p>
+                    </div>
+                </div>
+
+                <h4 style="text-align:left; color:#2c3e50; margin-bottom:-10px;">Seviye Bazlı İlerleme</h4>
+                <div class="levels-grid" id="levelProgressBox">
+                    </div>
+
+                <div class="api-box">
+                    <span style="font-weight:bold; color:#3498db; display:block; margin-bottom:5px;">🔌 Veri Yedekleme Kodu</span>
+                    <p style="font-size:0.75rem; margin-bottom:5px; color:#bdc3c7;">Bu kodu kopyalayıp başka bir cihaza yükleyebilirsiniz.</p>
+                    <code class="api-code" id="apiDataString">{"data": "..."}</code>
+                    <button class="btn-sm" style="background:#3498db; color:white; width:100%;" onclick="copyApiData()">📋 Kodu Kopyala</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="grammarModal" class="modal-overlay"><div class="modal-box" style="text-align:left;"><button style="position:absolute; top:20px; right:20px; border:none; background:none; font-size:2rem; cursor:pointer;" onclick="document.getElementById('grammarModal').style.display='none'">&times;</button><h2 id="grammarTitle" style="color:#2c3e50; margin-bottom:20px;">Konu</h2><div id="grammarBody" class="grammar-content"></div><button class="btn-sm" style="background:#2c3e50; color:white; margin-top:20px; width:100%;" onclick="document.getElementById('grammarModal').style.display='none'">Anladım</button></div></div>
+    <div id="settingsModal" class="modal-overlay"><div class="modal-box"><button style="position:absolute; top:15px; right:15px; border:none; background:none; font-size:1.5rem; cursor:pointer;" onclick="closeSettings()">&times;</button><h3 style="margin-bottom:20px;">Ayarlar</h3><div class="settings-grid"><button class="btn-sm" style="background:#3498db; color:white; padding:15px;" onclick="downloadBackup()">📥 Yedeği İndir</button><button class="btn-sm" style="background:#2ecc71; color:white; padding:15px;" onclick="document.getElementById('fileInput').click()">📤 Yedeği Yükle</button><button class="btn-sm" style="background:#f1c40f; color:white; padding:15px;" onclick="resetProgressOnly()">🔄 İlerlemeyi Sıfırla</button><button class="btn-sm" style="background:#e74c3c; color:white; padding:15px;" onclick="resetEverything()">🗑️ Her Şeyi Sil</button><button class="btn-sm" onclick="forceRecovery()">♻️ Eski Veri Kurtar</button><input type="file" id="fileInput" style="display:none;" onchange="uploadBackup(this)"></div></div></div>
+    <div id="importScreen" class="screen"><button class="back-btn" onclick="showMenu()"><i class="fa-solid fa-arrow-left"></i></button><div class="content-box" style="text-align:left;"><h3>Set Ekle</h3><div style="font-size:0.9rem; background:#f1f2f6; padding:15px; border-radius:15px; margin-bottom:20px;"><b>Format:</b><br>SET 1 - Başlık<br>1. Apple : Elma</div><select id="importLevelSelect"><option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select><textarea id="dataInput" rows="8"></textarea><div style="display:flex; gap:10px;"><button class="btn-sm" style="background:#27ae60; color:white; flex:1;" onclick="parseAndSaveData('append')">Ekle</button><button class="btn-sm" style="background:#e74c3c; color:white; flex:1;" onclick="parseAndSaveData('overwrite')">Üzerine Yaz</button></div></div></div>
+    <div id="editListScreen" class="screen"><button class="back-btn" onclick="showMenu()"><i class="fa-solid fa-arrow-left"></i></button><div class="content-box"><h3>Liste</h3><div id="editListContainer" style="margin-top:20px; text-align:left;"></div></div></div>
+    <div id="editModal" class="modal-overlay"><div class="content-box" style="width:500px;"><h3>Düzenle</h3><input type="text" id="editSetTitle"><textarea id="editSetData" rows="10"></textarea><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;"><button class="btn-sm" onclick="document.getElementById('editModal').style.display='none'">İptal</button><button class="btn-sm" style="background:#2c3e50; color:white;" onclick="saveEditedSet()">Kaydet</button></div></div></div>
+
+<script>
+/* =========================================
+   1. GRAMER & TEMİZLİK FONKSİYONLARI
+========================================= */
+const GRAMMAR_RULES = {
+    1: { title: "Present Simple Tense", content: "<strong>Genel doğruları, alışkanlıkları ve rutinleri anlatır.</strong><br><br>• <em>Olumlu:</em> Subject + V1 (He/She/It + V-s)<br>• <em>Olumsuz:</em> Don't / Doesn't + V1<br>• <em>Soru:</em> Do / Does + Subject + V1?<br><br>👉 <strong>Püf Nokta:</strong> 'He/She/It' öznelerinde fiile -s takısı gelir." },
+    2: { title: "Present Continuous Tense", content: "<strong>Şu an yapılan eylemleri anlatır.</strong><br><br>• <em>Yapı:</em> am/is/are + V-ing" },
+    3: { title: "Simple Past Tense", content: "<strong>Geçmişte bitmiş eylemleri anlatır.</strong><br><br>• <em>Yapı:</em> V2 (Did)" },
+    4: { title: "Past Continuous Tense", content: "<strong>Geçmişte devam eden eylemleri anlatır.</strong><br><br>• <em>Yapı:</em> Was/Were + V-ing" },
+    5: { title: "Simple Future (Will)", content: "<strong>Ani kararlar ve tahminler.</strong><br><br>• <em>Yapı:</em> Will + V1" },
+    6: { title: "Be Going To", content: "<strong>Planlanmış gelecek.</strong><br><br>• <em>Yapı:</em> am/is/are + going to + V1" },
+    7: { title: "Present Perfect Tense", content: "<strong>Etkisi süren veya zamanı belirsiz olaylar.</strong><br><br>• <em>Yapı:</em> Have/Has + V3" },
+    8: { title: "Present Perfect Continuous", content: "<strong>Süregelen eylemlerin süresi.</strong><br><br>• <em>Yapı:</em> Have/Has + been + V-ing" },
+    9: { title: "Past Perfect Tense", content: "<strong>Geçmişin geçmişi.</strong><br><br>• <em>Yapı:</em> Had + V3" },
+    10: { title: "Past Perfect Continuous", content: "<strong>Geçmişte süregelen eylem.</strong><br><br>• <em>Yapı:</em> Had + been + V-ing" },
+    11: { title: "Future Perfect Tense", content: "<strong>Gelecekte bitmiş olacak.</strong><br><br>• <em>Yapı:</em> Will + have + V3" },
+    12: { title: "Future Perfect Continuous", content: "<strong>Gelecekte ne kadar süredir yapıyor olacaksın.</strong><br><br>• <em>Yapı:</em> Will + have + been + V-ing" }
+};
+
+function removeParentheses(str) { return str.replace(/\s*\(.*?\)/g, "").trim(); }
+
+/* =========================================
+   2. OYUN VERİLERİ
+========================================= */
+let DB = {}; let PROGRESS = {eng_to_tr:{}, tr_to_eng:{}}; let STATS = {eng_to_tr:{correct:0,wrong:0}, tr_to_eng:{correct:0,wrong:0}}; let MISTAKES = [];
+let currentLevel = "A1"; let gameMode = "eng_to_tr"; let viewIndex = 0;
+let currentSetIndex=0; let currentSetData=[]; let currentQuestionIndex=0; let score=0; let isMistakeGame=false; let editingIndex=-1;
+const KEYS = { DB:"PM_CINE_DB_V1", PROG:"PM_CINE_PROG", STAT:"PM_CINE_STAT", MIS:"PM_CINE_MIS" };
+const ICONS = ["fa-pen-nib", "fa-graduation-cap", "fa-earth-americas", "fa-book-open", "fa-lightbulb", "fa-puzzle-piece", "fa-rocket", "fa-comments", "fa-bookmark"];
+
+window.onload = () => {
+    loadData();
+    if(Object.keys(DB).length===0) DB = { "A1": [{title:"SET 1 - Demo", items:[{eng:"apple",tr:"elma"},{eng:"run",tr:"koşmak"}]}] };
+    if(!DB[currentLevel] && Object.keys(DB).length>0) currentLevel = Object.keys(DB)[0];
+    viewIndex = PROGRESS[gameMode][currentLevel] || 0;
+    renderTabs(); showMenu();
+};
+
+/* =========================================
+   3. EKRAN & NAVİGASYON
+========================================= */
+function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
+function showMenu() { renderContent(); show("menuScreen"); }
+
+function renderTabs() {
+    let c = document.getElementById("levelTabsContainer"); c.innerHTML="";
+    let lvls=["A1","A2","B1","B2","C1","C2"]; Object.keys(DB).forEach(l=>{if(!lvls.includes(l))lvls.push(l)});
+    lvls.forEach(l=>{
+        let btn=document.createElement("div"); btn.className="lvl-btn "+(l===currentLevel?"active":""); btn.innerText=l;
+        btn.onclick=()=>{currentLevel=l; viewIndex=PROGRESS[gameMode][l]||0; renderTabs(); renderContent();}; c.appendChild(btn);
+    });
+}
+
+function renderContent() {
+    let sets=DB[currentLevel]||[]; let completed=PROGRESS[gameMode][currentLevel]||0;
+    if(sets.length===0) { document.getElementById("mainTitle").innerText="Set yok"; document.getElementById("btnStart").disabled=true; return; }
+    if(viewIndex<0) viewIndex=0; if(viewIndex>=sets.length) viewIndex=sets.length-1;
+    let set=sets[viewIndex]; let isLocked=viewIndex>completed; let isDone=viewIndex<completed;
+    document.getElementById("modeDisplay").innerText = (gameMode==="eng_to_tr")?"🇬🇧 > 🇹🇷":"🇹🇷 > 🇬🇧";
+    document.getElementById("setLabel").innerText = `SET ${viewIndex+1} / ${sets.length}`;
+    document.getElementById("mainTitle").innerText = set.title.replace(/SET \d+ [–-]/i, "").trim();
+    document.getElementById("mainIcon").className = `fa-solid ${ICONS[(viewIndex+set.title.length)%ICONS.length]}`;
+    let btn=document.getElementById("btnStart");
+    document.querySelector(".nav-prev").style.display=viewIndex===0?"none":"flex";
+    document.querySelector(".nav-next").style.display=viewIndex===sets.length-1?"none":"flex";
+    if(isLocked) { btn.innerHTML=`KİLİTLİ <i class="fa-solid fa-lock"></i>`; btn.style.background="#bdc3c7"; btn.disabled=true; btn.style.boxShadow="none";}
+    else if(isDone) { btn.innerHTML=`TEKRARLA <i class="fa-solid fa-rotate-left"></i>`; btn.style.background="#8e44ad"; btn.disabled=false; btn.style.boxShadow="0 10px 25px rgba(142, 68, 173, 0.4)";}
+    else { btn.innerHTML=`BAŞLA <i class="fa-solid fa-play"></i>`; btn.style.background="var(--accent-grad)"; btn.disabled=false; btn.style.boxShadow="0 10px 25px rgba(17, 153, 142, 0.4)";}
+    document.getElementById("mistakesAlert").style.display=MISTAKES.length>0?"block":"none";
+}
+function navCard(d) { let sets=DB[currentLevel]||[]; let next=viewIndex+d; if(next>=0&&next<sets.length){viewIndex=next; renderContent();} }
+function toggleGameMode() { gameMode=(gameMode==="eng_to_tr")?"tr_to_eng":"eng_to_tr"; viewIndex=PROGRESS[gameMode][currentLevel]||0; renderContent(); }
+
+/* =========================================
+   4. OYUN MOTORU
+========================================= */
+function startGame(idx) { isMistakeGame=false; currentSetIndex=idx; currentSetData=[...DB[currentLevel][idx].items]; startLoop(); }
+function startMistakeGame() { isMistakeGame=true; currentSetData=[...MISTAKES]; currentSetData.sort(()=>Math.random()-0.5); startLoop(); }
+function startLoop() { currentQuestionIndex=0; score=0; show("gameScreen"); document.getElementById("gameSetInfo").innerText=isMistakeGame?"Hatalar":`Set ${currentSetIndex+1}`; loadQuestion(); }
+
+function loadQuestion() {
+    if(currentQuestionIndex>=currentSetData.length) { finishSet(); return; }
+    let q=currentSetData[currentQuestionIndex]; 
+    let qTxt = removeParentheses((gameMode==="eng_to_tr") ? q.eng : q.tr);
+    let ans = removeParentheses((gameMode==="eng_to_tr") ? q.tr : q.eng);
+    let pool=isMistakeGame?MISTAKES:DB[currentLevel].flatMap(s=>s.items);
+    if(pool.length<5) pool=Object.values(DB).flat().flatMap(s=>s.items);
+    
+    document.getElementById("qText").innerText=qTxt; document.getElementById("scoreIndicator").innerText=score;
+    document.getElementById("feedbackMsg").innerHTML=""; document.getElementById("grammarBtn").style.display="none";
+    document.getElementById("progressBar").style.width=((currentQuestionIndex/currentSetData.length)*100)+"%";
+    
+    let opts=[ans]; while(opts.length<4) { let r=pool[Math.floor(Math.random()*pool.length)]; let v=removeParentheses((gameMode==="eng_to_tr")?r.tr:r.eng); if(!opts.includes(v)&&v!==ans)opts.push(v); }
+    opts.sort(()=>Math.random()-0.5);
+    let box=document.getElementById("optionsBox"); box.innerHTML="";
+    opts.forEach(o=>{let btn=document.createElement("button"); btn.className="opt-btn"; btn.innerText=o; btn.onclick=()=>check(o,ans,btn,q); box.appendChild(btn);});
+    readQuestion();
+}
+
+function check(sel, ans, btn, qObj) {
+    let stat=(gameMode==="eng_to_tr")?STATS.eng_to_tr:STATS.tr_to_eng;
+    document.querySelectorAll(".opt-btn").forEach(b=>b.disabled=true);
+    let grammarId = qObj.type || ((currentQuestionIndex % 12) + 1);
+
+    if(sel === ans) {
+        btn.style.background="#d4edda"; btn.style.borderColor="#27ae60"; score++; stat.correct++; document.getElementById("feedbackMsg").innerHTML="<span style='color:green'>DOĞRU!</span>";
+        if(isMistakeGame) MISTAKES=MISTAKES.filter(m=>m.eng!==qObj.eng);
+    } else {
+        btn.style.background="#fad3d3"; btn.style.borderColor="#c0392b"; stat.wrong++; document.getElementById("feedbackMsg").innerHTML="<span style='color:red'>YANLIŞ!</span>";
+        let gBtn = document.getElementById("grammarBtn"); gBtn.style.display="inline-block"; gBtn.onclick=()=>openGrammarModal(grammarId);
+        document.querySelectorAll(".opt-btn").forEach(b=>{if(b.innerText===ans){b.style.background="#d4edda";}});
+        if(!MISTAKES.some(m=>m.eng===qObj.eng)) { qObj.type = grammarId; MISTAKES.push(qObj); }
+    }
+    saveData(); setTimeout(()=>{if(document.getElementById('grammarModal').style.display!=='flex'){currentQuestionIndex++; loadQuestion();}}, 2500);
+}
+
+function openGrammarModal(id) { let r=GRAMMAR_RULES[id]; if(r){document.getElementById("grammarTitle").innerText=r.title; document.getElementById("grammarBody").innerHTML=r.content; document.getElementById("grammarModal").style.display="flex";} }
+function closeGrammarModal() { document.getElementById("grammarModal").style.display="none"; currentQuestionIndex++; loadQuestion(); }
+document.querySelector("#grammarModal button.btn-sm").onclick = closeGrammarModal;
+
+function finishSet() {
+    show("resultScreen"); document.getElementById("resultMessage").innerHTML=`Doğru: <b>${score}</b> | Yanlış: <b>${currentSetData.length-score}</b>`;
+    let next=document.getElementById("nextSetBtn");
+    if(!isMistakeGame) {
+        if(score===currentSetData.length) { document.getElementById("resultTitle").innerText="Mükemmel! 🎉"; next.style.display="inline-flex"; let p=PROGRESS[gameMode]; if(currentSetIndex===(p[currentLevel]||0)){p[currentLevel]=(p[currentLevel]||0)+1; saveData();} }
+        else { document.getElementById("resultTitle").innerText="Tekrar Dene"; next.style.display="none"; }
+    } else { document.getElementById("resultTitle").innerText="Hatalar Bitti!"; next.style.display="none"; }
+}
+
+function quitGame() { if(confirm("Çıkmak istiyor musun?")) showMenu(); }
+function goToNextSet() { viewIndex++; startGame(currentSetIndex+1); }
+function retrySet() { if(isMistakeGame) startMistakeGame(); else startGame(currentSetIndex); }
+function readQuestion() { let u=new SpeechSynthesisUtterance(document.getElementById("qText").innerText); u.lang=(gameMode==="eng_to_tr")?"en-US":"tr-TR"; speechSynthesis.speak(u); }
+
+/* =========================================
+   5. VERİ VE İSTATİSTİK
+========================================= */
+function loadData() { let d=localStorage.getItem(KEYS.DB); if(d)DB=JSON.parse(d); let p=localStorage.getItem(KEYS.PROG); if(p)PROGRESS=JSON.parse(p); let s=localStorage.getItem(KEYS.STAT); if(s)STATS=JSON.parse(s); let m=localStorage.getItem(KEYS.MIS); if(m)MISTAKES=JSON.parse(m); }
+function saveData() { localStorage.setItem(KEYS.DB,JSON.stringify(DB)); localStorage.setItem(KEYS.PROG,JSON.stringify(PROGRESS)); localStorage.setItem(KEYS.STAT,JSON.stringify(STATS)); localStorage.setItem(KEYS.MIS,JSON.stringify(MISTAKES)); }
+
+function parseAndSaveData(mode) { let raw=document.getElementById("dataInput").value; if(!raw)return alert("Veri yok"); let lvl=document.getElementById("importLevelSelect").value;
+    let sets=[], curr=null; raw.split('\n').forEach(l=>{let t=l.trim(); if(!t)return; if(t.toUpperCase().startsWith("SET")){if(curr)sets.push(curr); curr={title:t,items:[]}}else if(curr&&t.includes(":")){let p=t.split(":"); curr.items.push({eng:p[0].replace(/^\d+[\.\)]/,"").trim(), tr:p[1].trim()})}}); if(curr)sets.push(curr);
+    if(!DB[lvl])DB[lvl]=[]; if(mode==='overwrite'){DB[lvl]=sets; PROGRESS[gameMode][lvl]=0;} else DB[lvl]=DB[lvl].concat(sets);
+    saveData(); alert("Eklendi"); currentLevel=lvl; showMenu();
+}
+
+function openSettings() { document.getElementById("settingsModal").style.display="flex"; }
+function closeSettings() { document.getElementById("settingsModal").style.display="none"; }
+function downloadBackup() { let b=new Blob([JSON.stringify({db:DB,prog:PROGRESS,stat:STATS,mis:MISTAKES})],{type:'application/json'}); let a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='backup.json'; a.click(); closeSettings(); }
+function uploadBackup(i) { let r=new FileReader(); r.onload=e=>{let d=JSON.parse(e.target.result); DB=d.db; PROGRESS=d.prog; STATS=d.stat; MISTAKES=d.mis||[]; saveData(); location.reload();}; r.readAsText(i.files[0]); }
+function forceRecovery() { if(confirm("Eski verileri tara?")){let c=0; ["PM_PROHUB_DB_V1","PM_PRO_DB_V3"].forEach(k=>{let r=localStorage.getItem(k); if(r){try{let p=JSON.parse(r); Object.keys(p).forEach(l=>{if(!DB[l])DB[l]=[]; p[l].forEach(s=>{if(!DB[l].some(x=>x.title===s.title)){DB[l].push(s); c++;}})}) }catch(e){}}}); if(c>0){saveData(); alert(c+" set kurtarıldı"); location.reload();}else alert("Veri yok");} }
+function resetProgressOnly() { if(confirm("İlerlemeyi sıfırla?")){PROGRESS={eng_to_tr:{}, tr_to_eng:{}}; STATS={eng_to_tr:{correct:0,wrong:0}, tr_to_eng:{correct:0,wrong:0}}; MISTAKES=[]; saveData(); location.reload();} }
+function resetEverything() { if(confirm("Her şeyi sil?")){localStorage.removeItem(KEYS.DB); localStorage.removeItem(KEYS.PROG); localStorage.removeItem(KEYS.STAT); localStorage.removeItem(KEYS.MIS); location.reload();} }
+
+/* --- İSTATİSTİK GÜNCELLEME (SEVİYE BAZLI) --- */
+function showStatsScreen(){ 
+    show("statsScreen"); 
+    drawChart("chartET",STATS.eng_to_tr); 
+    drawChart("chartTE",STATS.tr_to_eng);
+    
+    // Level Progress Grid Doldur
+    let html = "";
+    ["A1","A2","B1","B2","C1","C2"].forEach(l => {
+        let sets = DB[l] || [];
+        let total = sets.length;
+        let done = PROGRESS[gameMode][l] || 0;
+        if(done > total) done = total;
+        let pct = total === 0 ? 0 : Math.round((done/total)*100);
+        let remaining = total - done;
+        
+        html += `
+        <div class="level-stat-card">
+            <div class="ls-header">
+                <span class="ls-title">${l} Seviyesi</span>
+                <span class="ls-percent">%${pct}</span>
+            </div>
+            <div class="ls-bar-bg"><div class="ls-bar-fill" style="width:${pct}%"></div></div>
+            <div class="ls-info">
+                <span>Tamamlanan: <b>${done}</b></span>
+                <span>Kalan: <b>${remaining}</b></span>
+            </div>
+        </div>`;
+    });
+    document.getElementById("levelProgressBox").innerHTML = html;
+
+    // API Verisini Oluştur
+    let exportData = {db:DB, prog:PROGRESS, stat:STATS, mis:MISTAKES};
+    document.getElementById("apiDataString").innerText = JSON.stringify(exportData);
+}
+
+function copyApiData() {
+    let txt = document.getElementById("apiDataString").innerText;
+    navigator.clipboard.writeText(txt).then(() => alert("Kopyalandı!"));
+}
+
+function drawChart(id,s){ if(window[id+"_C"])window[id+"_C"].destroy(); window[id+"_C"]=new Chart(document.getElementById(id),{type:'doughnut',data:{labels:['D','Y'],datasets:[{data:[s.correct,s.wrong],backgroundColor:['#2ecc71','#e74c3c']}]}}); }
+
+function toggleEditListMode() { show("editListScreen"); let d=document.getElementById("editListContainer"); d.innerHTML=""; (DB[currentLevel]||[]).forEach((s,i)=>{
+    d.innerHTML+=`<div style='background:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;'><span>Set ${i+1}: ${s.title}</span><div><button class='btn-sm' onclick='openEditModal(${i})'>✏️</button> <button class='btn-sm' onclick='deleteSet(${i})' style='color:red'>🗑️</button></div></div>`;
+});}
+function openEditModal(i) { editingIndex=i; document.getElementById("editSetTitle").value=DB[currentLevel][i].title; document.getElementById("editSetData").value=DB[currentLevel][i].items.map((x,n)=>`${n+1}. ${x.eng} : ${x.tr}`).join("\n"); document.getElementById("editModal").style.display="flex"; }
+function saveEditedSet() { let t=document.getElementById("editSetTitle").value; let items=[]; document.getElementById("editSetData").value.split("\n").forEach(l=>{if(l.includes(":")){let p=l.split(":"); items.push({eng:p[0].replace(/^\d+[\.\)]/,"").trim(), tr:p[1].trim()})}}); DB[currentLevel][editingIndex]={title:t,items:items}; saveData(); document.getElementById("editModal").style.display="none"; toggleEditListMode(); }
+function deleteSet(i) { if(confirm("Sil?")){DB[currentLevel].splice(i,1); saveData(); toggleEditListMode();} }
+</script>
+</body>
+</html>

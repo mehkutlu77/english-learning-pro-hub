@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Phrase Master Pro - Dashboard UI</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    :root {
+        /* RENK PALETİ */
+        --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        --card-bg: #ffffff;
+        --primary: #2c3e50;
+        --text-grey: #95a5a6;
+        --accent-teal: #11998e;
+        --accent-green: #38ef7d;
+        --btn-gradient: linear-gradient(to right, #11998e, #38ef7d);
+        --btn-shadow: rgba(17, 153, 142, 0.4);
+        --card-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        --danger: #e74c3c;
+        --success: #2ecc71;
+        --font-main: 'Poppins', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-main); -webkit-tap-highlight-color: transparent; }
+
+    body {
+        height: 100vh; width: 100vw; overflow: hidden;
+        background: var(--bg-gradient);
+        display: flex; justify-content: center; align-items: center;
+        color: var(--primary);
+    }
+
+    /* --- EKRAN YÖNETİMİ --- */
+    .screen {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        opacity: 0; pointer-events: none; z-index: 0;
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        transform: scale(0.95);
+    }
+    .screen.active {
+        opacity: 1; pointer-events: all; z-index: 10;
+        transform: scale(1);
+    }
+
+    /* --- ANA KART YAPISI --- */
+    .card-wrapper { position: relative; display: flex; justify-content: center; align-items: center; }
+
+    .main-card {
+        width: 750px; height: 750px;
+        background: var(--card-bg); border-radius: 40px; box-shadow: var(--card-shadow);
+        position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5;
+    }
+
+    /* MOBİL VE RESPONSIVE AYARLAR */
+    @media (max-width: 800px) {
+        .main-card { width: 95vw; height: auto; aspect-ratio: 1/1; max-height: 80vh; }
+        .stats-chart-row { flex-direction: column; }
+        .stats-grid { grid-template-columns: 1fr !important; }
+    }
+
+    /* --- ELEMENTLER --- */
+    .settings-icon { position: absolute; top: 40px; left: 45px; font-size: 1.8rem; color: var(--text-grey); cursor: pointer; transition: 0.3s; z-index: 10; }
+    .settings-icon:hover { color: var(--primary); transform: rotate(90deg); }
+    .lang-tag { position: absolute; top: 45px; right: 45px; font-size: 1rem; font-weight: 800; color: var(--text-grey); z-index: 10; }
+    .set-badge { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); background: #f1f2f6; color: var(--primary); padding: 10px 30px; border-radius: 50px; font-size: 1.1rem; font-weight: 800; white-space: nowrap; }
+
+    .content-area { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: -40px; }
+    .main-icon { font-size: 6rem; color: var(--primary); opacity: 0.9; margin-bottom: 25px; }
+    .main-text { font-size: 3.5rem; font-weight: 800; color: var(--primary); line-height: 1.1; text-align: center; max-width: 90%; }
+    @media (max-width: 800px) { .main-text { font-size: 2.2rem; } .main-icon { font-size: 4rem; } }
+
+    .start-btn { position: absolute; bottom: 60px; width: 80%; max-width: 400px; padding: 22px 0; background: var(--btn-gradient); border-radius: 60px; border: none; color: white; font-size: 1.4rem; font-weight: 800; box-shadow: 0 10px 25px var(--btn-shadow); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; z-index: 20; }
+    .start-btn:hover { transform: translateY(-5px); box-shadow: 0 15px 35px var(--btn-shadow); }
+
+    .top-nav-wrapper { position: absolute; top: -70px; left: 0; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 4; }
+    .level-tab { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; background: rgba(255,255,255,0.5); color: #7f8c8d; transition: 0.3s; }
+    .level-tab.active { background: var(--primary); color: white; transform: scale(1.1); box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3); }
+
+    .nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 60px; height: 60px; background: white; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.1); cursor: pointer; z-index: 3; transition: 0.2s; }
+    .nav-arrow:hover { transform: translateY(-50%) scale(1.1); color: var(--accent-teal); }
+    .nav-prev { left: -90px; } .nav-next { right: -90px; }
+    @media (max-width: 950px) { .nav-prev { left: 10px; z-index: 100; box-shadow: 0 5px 10px rgba(0,0,0,0.2); } .nav-next { right: 10px; z-index: 100; box-shadow: 0 5px 10px rgba(0,0,0,0.2); } }
+
+    .bottom-menu { position: absolute; bottom: -60px; width: 100%; display: flex; justify-content: center; gap: 15px; }
+    .menu-btn { background: rgba(255,255,255,0.8); border: none; padding: 10px 20px; border-radius: 20px; color: var(--text-grey); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+    .menu-btn:hover { background: white; color: var(--primary); transform: translateY(-2px); }
+
+    .game-container { width: 750px; height: 750px; background: var(--card-bg); border-radius: 40px; box-shadow: var(--card-shadow); padding: 40px; display: flex; flex-direction: column; justify-content: flex-start; position: relative; }
+    @media (max-width: 800px) { .game-container { width: 95vw; height: 90vh; border-radius: 30px; padding: 20px; } }
+    .q-info-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 700; color: var(--text-grey); }
+    .progress-track { width: 100%; height: 10px; background: #f1f2f6; border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--success); width: 0%; transition: width 0.3s ease; }
+    .q-text-display { font-size: 2.2rem; font-weight: 800; color: var(--primary); text-align: center; margin-bottom: 30px; min-height: 80px; display: flex; align-items: center; justify-content: center; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
+    .opt-btn { background: white; border: 2px solid #f1f2f6; height: 140px; border-radius: 20px; font-size: 1.4rem; font-weight: 600; color: var(--primary); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; padding: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+    .opt-btn:hover { border-color: var(--accent-teal); transform: translateY(-2px); }
+    
+    .content-card-full { width: 750px; max-height: 85vh; background: white; border-radius: 40px; padding: 40px; box-shadow: var(--card-shadow); overflow-y: auto; position: relative; }
+    @media (max-width: 800px) { .content-card-full { width: 95vw; } }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.7); backdrop-filter: blur(5px); z-index: 100; display: none; align-items: center; justify-content: center; }
+    .modal-box { background: white; width: 90%; max-width: 500px; padding: 30px; border-radius: 30px; text-align: center; position: relative; }
+    .icon-circle-btn { width: 50px; height: 50px; border-radius: 50%; background: #f1f2f6; border: none; color: var(--primary); font-size: 1.2rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+    .icon-circle-btn:hover { background: var(--primary); color: white; }
+    .hidden { display: none !important; }
+    textarea, select { width: 100%; padding: 15px; background: #f8f9fa; border: none; border-radius: 15px; margin: 10px 0; font-family: 'Poppins'; }
+    .feedback-msg { text-align: center; height: 30px; margin-top: 15px; font-weight: 700; font-size: 1.2rem; }
+
+    /* =========================================
+       YENİ DASHBOARD İSTATİSTİK CSS KURALLARI
+       ========================================= */
+    
+    /* 1. ÜST BÖLÜM: Grafik Kutuları */
+    .stats-chart-row {
+        display: flex; gap: 20px; justify-content: center; margin-bottom: 30px; width: 100%;
+    }
+    .chart-box {
+        background: #f8f9fa; border-radius: 30px; padding: 20px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        flex: 1; /* Eşit genişlik */
+    }
+    .chart-label { margin-top: 10px; font-weight: 700; color: var(--primary); font-size: 0.9rem; }
+
+    /* 2. ORTA BÖLÜM: Seviye Grid Yapısı */
+    .stats-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        width: 100%; margin-bottom: 30px;
+    }
+    .level-stat-card {
+        background: white; border: 1px solid #f1f2f6;
+        border-radius: 20px; padding: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        display: flex; flex-direction: column; gap: 12px;
+        transition: transform 0.2s;
+    }
+    .level-stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+
+    .lsc-header { display: flex; justify-content: space-between; align-items: center; }
+    .lsc-title { font-weight: 800; color: var(--primary); font-size: 1rem; }
+    .lsc-badge { 
+        background: #e8f8f5; color: var(--success); 
+        padding: 5px 12px; border-radius: 12px; 
+        font-size: 0.8rem; font-weight: 700; 
+    }
+
+    .lsc-bar-bg { 
+        width: 100%; height: 10px; 
+        background: #f1f2f6; border-radius: 10px; overflow: hidden; 
+    }
+    .lsc-bar-fill { 
+        height: 100%; 
+        background: linear-gradient(to right, #11998e, #38ef7d); 
+        border-radius: 10px; 
+    }
+
+    .lsc-footer { 
+        display: flex; justify-content: space-between; 
+        font-size: 0.75rem; color: #95a5a6; font-weight: 600; 
+    }
+
+    /* 3. ALT BÖLÜM: API/Yedekleme Kutusu */
+    .api-box {
+        background: #2c3e50; border-radius: 25px; padding: 25px;
+        color: white; width: 100%; margin-top: auto;
+    }
+    .api-header {
+        color: #3498db; font-weight: 700; font-size: 0.95rem; margin-bottom: 10px;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .api-code-area {
+        background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px;
+        font-family: monospace; font-size: 0.8rem; color: #ecf0f1;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);
+    }
+    .api-btn {
+        width: 100%; background: #3498db; color: white; border: none;
+        padding: 12px; border-radius: 15px; font-weight: 700; font-size: 0.9rem;
+        cursor: pointer; transition: 0.2s;
+    }
+    .api-btn:hover { background: #2980b9; }
+
+</style>
+</head>
+<body>
+
+    <div id="menuScreen" class="screen active">
+        <div class="card-wrapper">
+            <div class="top-nav-wrapper" id="levelTabsContainer"></div>
+            <button class="nav-arrow nav-prev" onclick="navCard(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+
+            <div class="main-card">
+                <div class="settings-icon" onclick="show('importScreen')"><i class="fa-solid fa-gear"></i></div>
+                <div class="lang-tag" id="modeDisplay">GB > TR</div>
+                <div class="set-badge" id="setLabel">SET 1</div>
+                <div class="content-area">
+                    <i class="fa-solid fa-layer-group main-icon" id="mainIcon"></i>
+                    <div class="main-text" id="mainTitle">Loading...</div>
+                </div>
+                <button class="start-btn" id="btnStart" onclick="startGame(viewIndex)">BAŞLA</button>
+            </div>
+
+            <button class="nav-arrow nav-next" onclick="navCard(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            <div class="bottom-menu">
+                <button class="menu-btn" onclick="show('importScreen')"><i class="fa-solid fa-plus"></i> Ekle</button>
+                <button class="menu-btn" onclick="showStatsScreen()"><i class="fa-solid fa-chart-pie"></i> İstatistik</button>
+                <button class="menu-btn" onclick="toggleGameMode()"><i class="fa-solid fa-rotate"></i> Mod</button>
+                <button class="menu-btn" onclick="openSettings()"><i class="fa-solid fa-database"></i> Veri</button>
+            </div>
+        </div>
+        <div id="mistakesAlert" style="display:none; position:absolute; bottom: 20px; z-index:50;">
+            <button class="menu-btn" style="background:var(--danger); color:white;" onclick="startMistakeGame()">
+                <i class="fa-solid fa-triangle-exclamation"></i> Hataları Çalış
+            </button>
+        </div>
+    </div>
+
+    <div id="gameScreen" class="screen">
+        <div class="game-container">
+            <button class="icon-circle-btn" onclick="quitGame()" style="position:absolute; top:30px; left:30px;"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="q-info-bar" style="margin-top: 10px; padding: 0 60px;">
+                <span id="gameSetInfo">SET 1</span>
+                <span>Skor: <span id="scoreIndicator" style="color:var(--accent-teal)">0</span></span>
+            </div>
+            <div class="progress-track" style="margin: 20px 0;"><div id="progressBar" class="progress-fill"></div></div>
+            <div id="qText" class="q-text-display">...</div>
+            <div onclick="readQuestion()" style="align-self:center; margin-bottom:30px; width:50px; height:50px; background:var(--primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="fa-solid fa-volume-high"></i></div>
+            <div id="optionsBox" class="options-grid"></div>
+            <div id="feedbackMsg" class="feedback-msg"></div>
+        </div>
+    </div>
+
+    <div id="resultScreen" class="screen">
+        <div class="content-card-full" style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <i class="fa-solid fa-trophy" style="font-size:5rem; color:#f1c40f; margin-bottom:20px;"></i>
+            <h1 id="resultTitle" style="color:var(--primary); font-size:2.5rem; margin-bottom:10px;">Bitti!</h1>
+            <p id="resultMessage" style="font-size:1.3rem; margin-bottom:40px; color:#95a5a6;"></p>
+            <button id="nextSetBtn" class="start-btn" style="position:static; width:100%; margin-bottom:15px;" onclick="goToNextSet()">Sonraki Set</button>
+            <button class="menu-btn" style="width:100%; justify-content:center; background:#f1f2f6;" onclick="showMenu()">Ana Menü</button>
+        </div>
+    </div>
+
+    <div id="statsScreen" class="screen">
+        <div class="content-card-full">
+            <div style="display:flex; align-items:center; margin-bottom:30px;">
+                <button class="icon-circle-btn" onclick="showMenu()"><i class="fa-solid fa-arrow-left"></i></button>
+                <h2 style="flex:1; text-align:center;">İstatistikler</h2>
+                <div style="width:50px;"></div>
+            </div>
+
+            <div class="stats-chart-row">
+                <div class="chart-box">
+                    <div style="width:120px; height:120px;"><canvas id="chartET"></canvas></div>
+                    <div class="chart-label">🇬🇧 İng > Tür</div>
+                </div>
+                <div class="chart-box">
+                    <div style="width:120px; height:120px;"><canvas id="chartTE"></canvas></div>
+                    <div class="chart-label">🇹🇷 Tür > İng</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 10px 0 20px 0; font-size:1.1rem; color:var(--text-grey);">Seviye İlerlemesi (<span id="statModeBadge">🇬🇧</span>)</h3>
+
+            <div id="levelGrid" class="stats-grid">
+                </div>
+
+            <div class="api-box">
+                <div class="api-header"><i class="fa-solid fa-plug"></i> Veri Yedekleme Kodu</div>
+                <div id="backupCodeDisplay" class="api-code-area">...</div>
+                <button class="api-btn" onclick="copyBackupCode()"><i class="fa-regular fa-copy"></i> Kodu Kopyala</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="importScreen" class="screen">
+        <div class="content-card-full" style="max-height:auto; max-width:600px;">
+            <div style="display:flex; align-items:center; margin-bottom:20px;">
+                <button class="icon-circle-btn" onclick="showMenu()"><i class="fa-solid fa-arrow-left"></i></button>
+                <h3 style="flex:1; text-align:center;">Veri Ekle</h3>
+            </div>
+            <select id="importLevelSelect"><option value="A1">A1</option><option value="A2" selected>A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option></select>
+            <textarea id="dataInput" rows="10" placeholder="Format:&#10;SET 1 - Konu Başlığı&#10;1. Apple : Elma&#10;2. Pen : Kalem"></textarea>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="menu-btn" style="flex:1; justify-content:center; background:var(--success); color:white;" onclick="parseAndSaveData('append')">Ekle</button>
+                <button class="menu-btn" style="flex:1; justify-content:center; background:var(--danger); color:white;" onclick="parseAndSaveData('overwrite')">Sil & Yükle</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="icon-circle-btn" style="position:absolute; top:15px; right:15px; width:35px; height:35px;" onclick="closeSettings()">&times;</button>
+            <h3 style="margin-bottom:25px; color:var(--primary);">Veri Yönetimi</h3>
+            <div style="display:grid; gap:15px;">
+                <button class="menu-btn" style="justify-content:center; width:100%; background:#f39c12; color:white;" onclick="downloadBackup()">Yedeği İndir</button>
+                <button class="menu-btn" style="justify-content:center; width:100%; background:#27ae60; color:white;" onclick="document.getElementById('fileInput').click()">Yedeği Yükle</button>
+                <button class="menu-btn" style="justify-content:center; width:100%; background:var(--danger); color:white;" onclick="resetAllProgress()">Tümünü Sıfırla</button>
+                <button class="menu-btn" style="justify-content:center; width:100%; border:1px solid #ddd;" onclick="forceRecovery()">Eski Veri Kurtar</button>
+                <input type="file" id="fileInput" style="display:none;" onchange="uploadBackup(this)">
+            </div>
+        </div>
+    </div>
+
+<script>
+/* JS MANTIĞI AYNEN KORUNDU, SADECE HTML RENDER KISIMLARI GÜNCELLENDİ */
+let DB={}; let PROGRESS={eng_to_tr:{},tr_to_eng:{}}; let STATS={eng_to_tr:{correct:0,wrong:0},tr_to_eng:{correct:0,wrong:0}}; let MISTAKES=[];
+let currentLevel="A1"; let gameMode="eng_to_tr"; let viewIndex=0; let currentSetIndex=0; let currentSetData=[]; let currentQuestionIndex=0; let score=0; let isMistakeGame=false;
+const KEYS={DB:"PM_PRO_DB_V5",PROG:"PM_PRO_PROG_V5",STAT:"PM_PRO_STATS_V5",MIS:"PM_PRO_MIS_V5"};
+const ICONS=["fa-book-open","fa-graduation-cap","fa-earth-americas","fa-pen-fancy","fa-lightbulb","fa-scroll"];
+
+window.onload=()=>{ loadData(); if(Object.keys(DB).length>0&&!DB[currentLevel])currentLevel=Object.keys(DB)[0]; viewIndex=PROGRESS[gameMode][currentLevel]||0; renderTabs(); showMenu(); if(window.innerWidth<850){/* Mobile handler */} };
+
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");}
+function showMenu(){renderContent();show("menuScreen");}
+function renderTabs(){let c=document.getElementById("levelTabsContainer");c.innerHTML="";let lvls=["A1","A2","B1","B2","C1","C2"];Object.keys(DB).forEach(l=>{if(!lvls.includes(l))lvls.push(l)});lvls.forEach(l=>{let btn=document.createElement("div");btn.className="level-tab "+(l===currentLevel?"active":"");btn.innerText=l;btn.onclick=()=>{currentLevel=l;viewIndex=PROGRESS[gameMode][l]||0;renderTabs();renderContent();};c.appendChild(btn);});}
+function renderContent(){
+    let sets=DB[currentLevel]||[]; let completed=PROGRESS[gameMode][currentLevel]||0;
+    if(sets.length===0){document.getElementById("mainTitle").innerText="Veri Yok";document.getElementById("btnStart").innerHTML="Ekle +";document.getElementById("btnStart").onclick=()=>show('importScreen');return;}
+    if(viewIndex<0)viewIndex=0;if(viewIndex>=sets.length)viewIndex=sets.length-1;
+    let set=sets[viewIndex]; let isLocked=viewIndex>completed; let isDone=viewIndex<completed;
+    document.getElementById("modeDisplay").innerText=(gameMode==="eng_to_tr")?"🇬🇧 > 🇹🇷":"🇹🇷 > 🇬🇧";
+    document.getElementById("setLabel").innerText=`SET ${viewIndex+1} / ${sets.length}`;
+    document.getElementById("mainTitle").innerText=set.title.replace(/SET \d+ [–-]/i,"").trim();
+    document.getElementById("mainIcon").className=`fa-solid ${ICONS[(viewIndex)%ICONS.length]} main-icon`;
+    let btn=document.getElementById("btnStart"); btn.onclick=()=>startGame(viewIndex);
+    if(isLocked){btn.innerHTML="KİLİTLİ 🔒";btn.disabled=true;btn.style.background="#bdc3c7";}
+    else if(isDone){btn.innerHTML="TEKRARLA ↺";btn.disabled=false;btn.style.background="#9b59b6";}
+    else{btn.innerHTML="BAŞLA ▶";btn.disabled=false;btn.style.background="linear-gradient(to right, #11998e, #38ef7d)";}
+    document.getElementById("mistakesAlert").style.display=MISTAKES.length>0?"block":"none";
+}
+function navCard(d){let sets=DB[currentLevel]||[];let next=viewIndex+d;if(next>=0&&next<sets.length){viewIndex=next;renderContent();}}
+function toggleGameMode(){gameMode=(gameMode==="eng_to_tr")?"tr_to_eng":"eng_to_tr";viewIndex=PROGRESS[gameMode][currentLevel]||0;renderContent();}
+function startGame(idx){isMistakeGame=false;currentSetIndex=idx;currentSetData=[...DB[currentLevel][idx].items];startLoop();}
+function startMistakeGame(){isMistakeGame=true;currentSetData=[...MISTAKES];currentSetData.sort(()=>Math.random()-0.5);startLoop();}
+function startLoop(){currentQuestionIndex=0;score=0;show("gameScreen");document.getElementById("gameSetInfo").innerText=`Set ${currentSetIndex+1}`;loadQuestion();}
+function loadQuestion(){
+    if(currentQuestionIndex>=currentSetData.length){finishSet();return;}
+    let q=currentSetData[currentQuestionIndex];let qTxt,ans;
+    let pool=isMistakeGame?MISTAKES:DB[currentLevel].flatMap(s=>s.items);
+    if(pool.length<5)pool=Object.values(DB).flat().flatMap(s=>s.items);
+    if(gameMode==="eng_to_tr"){qTxt=q.eng;ans=q.tr;}else{qTxt=q.tr;ans=q.eng;}
+    document.getElementById("qText").innerText=qTxt;document.getElementById("scoreIndicator").innerText=score;
+    document.getElementById("feedbackMsg").innerHTML="";
+    document.getElementById("progressBar").style.width=((currentQuestionIndex/currentSetData.length)*100)+"%";
+    let opts=[ans];while(opts.length<4){let r=pool[Math.floor(Math.random()*pool.length)];let v=(gameMode==="eng_to_tr")?r.tr:r.eng;if(!opts.includes(v)&&v!==ans)opts.push(v);}
+    opts.sort(()=>Math.random()-0.5);
+    let box=document.getElementById("optionsBox");box.innerHTML="";
+    opts.forEach(o=>{let btn=document.createElement("button");btn.className="opt-btn";btn.innerText=o;btn.onclick=()=>check(o,ans,btn,q);box.appendChild(btn);});
+    readQuestion();
+}
+function check(sel,ans,btn,qObj){
+    let stat=(gameMode==="eng_to_tr")?STATS.eng_to_tr:STATS.tr_to_eng;
+    document.querySelectorAll(".opt-btn").forEach(b=>b.disabled=true);
+    if(sel===ans){btn.style.border="2px solid #2ecc71";btn.style.background="#e8f8f5";score++;stat.correct++;document.getElementById("feedbackMsg").innerHTML="<span style='color:#2ecc71'>DOĞRU!</span>";if(isMistakeGame)MISTAKES=MISTAKES.filter(m=>m.eng!==qObj.eng);}
+    else{btn.style.border="2px solid #e74c3c";btn.style.background="#fdedec";stat.wrong++;document.getElementById("feedbackMsg").innerHTML="<span style='color:#e74c3c'>YANLIŞ!</span>";document.querySelectorAll(".opt-btn").forEach(b=>{if(b.innerText===ans){b.style.border="2px solid #2ecc71"}});if(!MISTAKES.some(m=>m.eng===qObj.eng))MISTAKES.push(qObj);}
+    saveData();setTimeout(()=>{currentQuestionIndex++;loadQuestion();},1500);
+}
+function finishSet(){
+    show("resultScreen");document.getElementById("resultMessage").innerHTML=`Doğru: ${score} | Yanlış: ${currentSetData.length-score}`;
+    if(!isMistakeGame&&score===currentSetData.length){
+        let prog=PROGRESS[gameMode];if(currentSetIndex===(prog[currentLevel]||0)){prog[currentLevel]=(prog[currentLevel]||0)+1;saveData();}
+        document.getElementById("nextSetBtn").style.display=(currentSetIndex+1<(DB[currentLevel]||[]).length)?"block":"none";
+        document.getElementById("resultTitle").innerText="Mükemmel!";
+    }else{document.getElementById("nextSetBtn").style.display="none";document.getElementById("resultTitle").innerText="Tekrar Dene";}
+}
+function quitGame(){if(confirm("Çık?"))showMenu();}
+function goToNextSet(){viewIndex++;startGame(currentSetIndex+1);}
+function retrySet(){startGame(currentSetIndex);}
+function readQuestion(){let u=new SpeechSynthesisUtterance(document.getElementById("qText").innerText);u.lang=(gameMode==="eng_to_tr")?"en-US":"tr-TR";u.rate=0.9;speechSynthesis.speak(u);}
+function loadData(){let d=localStorage.getItem(KEYS.DB);if(d)DB=JSON.parse(d);let p=localStorage.getItem(KEYS.PROG);if(p)PROGRESS=JSON.parse(p);let s=localStorage.getItem(KEYS.STAT);if(s)STATS=JSON.parse(s);let m=localStorage.getItem(KEYS.MIS);if(m)MISTAKES=JSON.parse(m);}
+function saveData(){localStorage.setItem(KEYS.DB,JSON.stringify(DB));localStorage.setItem(KEYS.PROG,JSON.stringify(PROGRESS));localStorage.setItem(KEYS.STAT,JSON.stringify(STATS));localStorage.setItem(KEYS.MIS,JSON.stringify(MISTAKES));}
+function parseAndSaveData(mode){let raw=document.getElementById("dataInput").value;if(!raw)return;let lvl=document.getElementById("importLevelSelect").value;let sets=[],curr=null;raw.split('\n').forEach(l=>{let t=l.trim();if(!t)return;if(t.toUpperCase().startsWith("SET")){if(curr)sets.push(curr);curr={title:t,items:[]}}else if(curr){let parts=t.replace(/^\d+[\.\)\-]\s*/,'').split(/[:\-]/);if(parts.length>=2)curr.items.push({eng:parts[0].trim(),tr:parts[1].trim()})}});if(curr)sets.push(curr);if(!DB[lvl])DB[lvl]=[];if(mode==='overwrite'){DB[lvl]=sets;PROGRESS[gameMode][lvl]=0;}else DB[lvl]=DB[lvl].concat(sets);saveData();alert("Eklendi");showMenu();}
+function openSettings(){document.getElementById("settingsModal").style.display="flex";}
+function closeSettings(){document.getElementById("settingsModal").style.display="none";}
+function downloadBackup(){let b=new Blob([JSON.stringify({db:DB,prog:PROGRESS,stat:STATS,mis:MISTAKES})],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='backup.json';a.click();closeSettings();}
+function uploadBackup(i){let r=new FileReader();r.onload=e=>{let d=JSON.parse(e.target.result);DB=d.db;PROGRESS=d.prog;STATS=d.stat;MISTAKES=d.mis||[];saveData();location.reload();};r.readAsText(i.files[0]);}
+function forceRecovery(){if(confirm("Eski verileri tara?")){let c=0;["PM_VISUAL_DB","PM_PRO_DB_V5","PM_PRO_DB_V4"].forEach(k=>{let r=localStorage.getItem(k);if(r){try{let p=JSON.parse(r);Object.keys(p).forEach(l=>{if(!DB[l])DB[l]=[];p[l].forEach(s=>{if(!DB[l].some(x=>x.title===s.title)){DB[l].push(s);c++;}})}) }catch(e){}}});if(c>0){saveData();alert(c+" set kurtarıldı");location.reload();}else alert("Veri yok");}}
+function resetProgressOnly(){if(confirm("İlerlemeyi sıfırla?")){PROGRESS={eng_to_tr:{},tr_to_eng:{}};STATS={eng_to_tr:{correct:0,wrong:0},tr_to_eng:{correct:0,wrong:0}};MISTAKES=[];saveData();location.reload();}}
+function resetAllProgress(){if(confirm("HER ŞEY SİLİNECEK?")){localStorage.clear();location.reload();}}
+function copyBackupCode(){let t=document.getElementById("backupCodeDisplay").innerText;navigator.clipboard.writeText(t).then(()=>{alert("Kopyalandı!");});}
+function drawChart(id,s){if(window[id+"_C"])window[id+"_C"].destroy();window[id+"_C"]=new Chart(document.getElementById(id),{type:'doughnut',data:{labels:['Doğru','Yanlış'],datasets:[{data:[s.correct,s.wrong],backgroundColor:['#2ecc71','#e74c3c'],borderWidth:0}]},options:{responsive:true,cutout:'70%',plugins:{legend:{display:false}}}});}
+
+// GÜNCELLENEN RENDER FONKSİYONU
+function showStatsScreen(){
+    show("statsScreen");
+    drawChart("chartET",STATS.eng_to_tr);
+    drawChart("chartTE",STATS.tr_to_eng);
+    document.getElementById("statModeBadge").innerText=(gameMode==="eng_to_tr")?"🇬🇧":"🇹🇷";
+    
+    // YENİ GRID YAPISI İÇİN HTML ÜRETİMİ
+    let grid=document.getElementById("levelGrid");
+    grid.innerHTML="";
+    const levels=["A1","A2","B1","B2","C1","C2"];
+    
+    levels.forEach(lvl=>{
+        let total=(DB[lvl]||[]).length;
+        let prog=PROGRESS[gameMode][lvl]||0;
+        if(prog>total)prog=total;
+        let pct=total?Math.round((prog/total)*100):0;
+        let remaining=total-prog;
+
+        // YENİ KART TASARIMI
+        grid.innerHTML+=`
+        <div class="level-stat-card">
+            <div class="lsc-header">
+                <span class="lsc-title">${lvl} Seviyesi</span>
+                <span class="lsc-badge">%${pct}</span>
+            </div>
+            <div class="lsc-bar-bg">
+                <div class="lsc-bar-fill" style="width:${pct}%"></div>
+            </div>
+            <div class="lsc-footer">
+                <span>Tamamlanan: <b>${prog}</b></span>
+                <span>Kalan: <b>${remaining}</b></span>
+            </div>
+        </div>`;
+    });
+
+    let backupString=JSON.stringify({db:DB,prog:PROGRESS,stat:STATS});
+    document.getElementById("backupCodeDisplay").innerText=backupString;
+}
+</script>
+</body>
+</html>
