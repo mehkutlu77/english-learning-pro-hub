@@ -1,7 +1,4 @@
-/* ENGLISH LEARNING PRO HUB - STYLES */
-/* (index.html içindeki <style> bloğunun TAMAMI buraya taşındı) */
-<style>
-/* --- STYLE SYSTEM V31.0 ULTIMATE --- */
+/* --- STYLE SYSTEM V35.0 ULTIMATE (style.css) --- */
 :root {
     --bg-body: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     --primary: #2c3e50; 
@@ -20,31 +17,22 @@
 
 * { box-sizing: border-box; outline: none; }
 
-body {
-    margin: 0;
-    padding: 0;
-    background: var(--bg-body);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: stretch;
-    font-family: var(--font-main);
-    color: var(--text-color);
-  body {
-    overflow-x: hidden;
+body { 
+    margin: 0; padding: 0; 
+    background: var(--bg-body); 
+    height: 100vh; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    font-family: var(--font-main); 
+    color: var(--text-color); 
+    overflow: hidden; 
 }
-.sidebar {
-    overflow-x: auto;
-}
-.app-container {
-    display: flex;
-    width: 100%;
-    max-width: 1700px;
-    min-height: 100vh;
-    background: var(--card-bg);
-    border-radius: 0;
-    box-shadow: var(--shadow);
-    overflow: visible;
+
+.app-container { 
+    display: flex; width: 96%; max-width: 1700px; height: 95vh; 
+    background: var(--card-bg); border-radius: 30px; box-shadow: var(--shadow); 
+    overflow: hidden; border: none; 
 }
 
 /* SIDEBAR */
@@ -192,20 +180,6 @@ body {
 
 /* OPEN BOOK VIEW */
 .open-book-view { display: none; width: 100%; height: 100%; flex-direction: column; background: #fff; }
-#externalAppView {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-}
-#appFrame {
-    width: 100%;
-    flex: 1;
-    border: none;
-    min-height: 70vh;
-}
-
 .book-top-bar { height: 70px; background: #fff; border-bottom: 1px solid #f1f2f6; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; flex-shrink: 0; }
 .back-btn { border: 1px solid #dfe6e9; background: #fff; color: #636e72; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: 0.2s; font-family: var(--font-main); display: flex; align-items: center; gap: 5px; }
 .back-btn:hover { background: #f1f2f6; color: var(--primary); }
@@ -290,101 +264,28 @@ body {
 .btn-pause.paused { background: #27ae60; animation: pulse 2s infinite; }
 @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-@media (max-width: 900px) {
-    #appFrame {
-        min-height: 80vh;
-    }
-}
+
 /* RESPONSIVE */
 @media (max-width: 1200px) {
     .wm-card-container { width: 500px; height: 300px; }
     .wm-card-front, .wm-card-back { font-size: 2.5rem; }
 }
 @media (max-width: 900px) {
-
-    .app-container {
-        flex-direction: column;
-        height: auto;
-        min-height: 100vh;
-        width: 100%;
-        border-radius: 0;
-        overflow-y: auto;
-    }
-
-    .sidebar {
-        width: 100%;
-        height: auto;
-        padding: 15px;
-        overflow-x: auto;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
-        gap: 6px;
-    }
-
-    .sidebar h2 {
-        display: none;
-    }
-
-    .nav-btn {
-        font-size: 0.8rem;
-        padding: 8px 15px;
-        white-space: nowrap;
-        min-width: max-content;
-    }
-
-    .workbook-area {
-        height: auto;
-        min-height: calc(100vh - 100px);
-    }
-
-    .book-spread {
-        flex-direction: column;
-        overflow-y: visible;
-        height: auto;
-    }
-
-    .single-page {
-        height: auto;
-        border-bottom: 1px solid #eee;
-        padding: 25px 20px;
-        font-size: 1rem;
-        line-height: 1.7;
-        overflow: visible;
-    }
-
-    #pageRight {
-        display: block;
-        border-left: none;
-    }
-
-    .spine-shadow {
-        display: none;
-    }
-
-    .wm-card-container {
-        width: 90%;
-        height: 250px;
-    }
-
-    .wm-card-front,
-    .wm-card-back {
-        font-size: 2rem;
-    }
-
-    .vocab-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .quiz-sticky-header {
-        flex-direction: column;
-        gap: 10px;
-        position: relative;
-    }
+    .app-container { flex-direction: column; height: auto; min-height: 100vh; width: 100%; border-radius: 0; overflow-y: auto; }
+    .sidebar { width: 100%; height: auto; padding: 15px; overflow-x: auto; flex-direction: row; flex-wrap: wrap; justify-content: center; }
+    .sidebar h2 { display: none; }
+    .nav-btn { font-size: 0.8rem; padding: 8px 15px; }
+    .workbook-area { height: auto; min-height: calc(100vh - 100px); }
+    .book-spread { flex-direction: column; overflow-y: visible; height: auto; }
+    .single-page { height: auto; border-bottom: 1px solid #eee; padding: 30px; overflow: visible; }
+    #pageRight { display: block; border-left: none; }
+    .spine-shadow { display: none; }
+    .wm-card-container { width: 90%; height: 250px; }
+    .wm-card-front, .wm-card-back { font-size: 2rem; }
+    .vocab-layout { grid-template-columns: 1fr; }
+    .quiz-sticky-header { flex-direction: column; gap: 10px; position: relative; }
 }
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #f1f2f6; }
 ::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #636e72; }
-</style>

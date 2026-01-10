@@ -232,13 +232,33 @@ body {
 .review-item.correct { border-left: 5px solid var(--success); background: #f0fdf4; }
 .review-item.wrong { border-left: 5px solid var(--error); background: #fff5f5; }
 
-/* MODALS */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.8); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
-.modal { background: #fff; width: 700px; padding: 40px; border-radius: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
-.backup-section { background: #f8f9fa; padding: 20px; border-radius: 20px; border: 1px solid #f1f2f6; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-.backup-btn { padding: 12px 25px; border: none; border-radius: 50px; font-weight: 700; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px; font-family: var(--font-main); transition: 0.2s;}
-.dl-btn { background: var(--accent-grad); box-shadow: 0 5px 15px rgba(41, 128, 185, 0.3); } 
-.ul-btn { background: #f39c12; box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3); }
+/* MODALS & ADMIN PANEL STYLE V2 */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.85); backdrop-filter: blur(8px); z-index: 1000; display: none; justify-content: center; align-items: center; }
+.modal { background: #fff; width: 850px; max-width: 95vw; max-height: 90vh; padding: 40px; border-radius: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); overflow-y: auto; }
+.modal::-webkit-scrollbar { width: 0; } /* Scrollbar'ı gizle ama çalışsın */
+
+.admin-grid-top { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+.admin-box { padding: 25px; border-radius: 20px; border: 1px solid transparent; display: flex; flex-direction: column; gap: 15px; }
+.box-backup { background: #f8f9fa; border-color: #dfe6e9; }
+.box-danger { background: #fff5f5; border-color: #fab1a0; }
+.admin-box-title { font-weight: 700; color: var(--primary); font-size: 1.1rem; display:flex; align-items:center; gap:10px; }
+
+.backup-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.backup-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--font-main); transition: 0.2s; font-size: 0.9rem;}
+.dl-btn { background: var(--accent); } .dl-btn:hover { background: var(--secondary); }
+.ul-btn { background: #f39c12; } .ul-btn:hover { background: #d35400; }
+.danger-btn { background: white; border: 1px solid var(--error); color: var(--error); } 
+.danger-btn:hover { background: var(--error); color: white; }
+
+.input-area-wrapper { background: #fff; border-top: 2px solid #f1f2f6; padding-top: 25px; }
+.admin-input-row { display: flex; gap: 15px; margin-bottom: 15px; }
+.admin-select { flex: 1; padding: 15px; border: 2px solid #dfe6e9; border-radius: 15px; font-family: var(--font-main); font-weight: 600; color: var(--primary); outline: none; transition: 0.3s; background-image: none;}
+.admin-select:focus { border-color: var(--accent); }
+.admin-textarea { width: 100%; height: 200px; padding: 20px; border: 2px dashed #b2bec3; border-radius: 20px; font-family: 'Courier New', monospace; font-size: 0.95rem; color: var(--primary); resize: vertical; outline: none; background: #fdfdfd; transition:0.3s; }
+.admin-textarea:focus { border-color: var(--accent); background: #fff; }
+.save-btn-large { width: 100%; padding: 18px; background: var(--success); color: white; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 15px; box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3); transition: 0.2s; letter-spacing: 1px;}
+.save-btn-large:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(39, 174, 96, 0.4); }
+
 .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 15px 40px; border-radius: 50px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 2000; display: none; font-weight: 600; font-family: var(--font-main); animation: slideUp 0.4s ease; }
 .toast.error { background: var(--error); }
 @keyframes slideUp { from { bottom: 0; opacity: 0; } to { bottom: 40px; opacity: 1; } }
@@ -297,15 +317,59 @@ body {
 ::-webkit-scrollbar-track { background: #f1f2f6; }
 ::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #636e72; }
+/* --- LEVEL DASHBOARD STYLES (NEW) --- */
+.dash-wrapper {
+    display: flex; justify-content: center; align-items: center; gap: 40px;
+    height: 80%; width: 100%; padding: 20px; font-family: var(--font-main);
+}
+.dash-stat-box {
+    background: white; border: 1px solid #dfe6e9; border-radius: 20px;
+    padding: 30px; text-align: center; cursor: pointer; transition: 0.3s;
+    width: 200px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:center;
+}
+.dash-stat-box:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); border-color: var(--accent); }
+.dash-stat-title { font-size: 1.1rem; color: #7f8c8d; font-weight: 600; margin-bottom: 10px; }
+.dash-stat-value { font-size: 2.5rem; color: var(--primary); font-weight: 800; }
+.dash-stat-sub { font-size: 0.9rem; color: var(--success); font-weight: 700; margin-top: 5px; }
+
+.dash-center-card {
+    width: 500px; height: 350px; background: white; border-radius: 40px;
+    border: 4px solid var(--primary); display: flex; flex-direction: column;
+    justify-content: center; align-items: center; text-align: center;
+    cursor: pointer; transition: 0.4s; box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+    position: relative; overflow: hidden; padding: 40px;
+}
+.dash-center-card:hover {
+    transform: scale(1.02); background: var(--primary); border-color: var(--primary);
+}
+.dash-center-card:hover h1, .dash-center-card:hover p { color: white !important; }
+.dash-center-label { font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; color: #95a5a6; margin-bottom: 15px; font-weight: 700;}
+.dash-center-title { font-size: 2.2rem; color: var(--primary); font-weight: 800; line-height: 1.3; }
+.dash-center-action { margin-top: 25px; padding: 10px 30px; background: var(--accent); color: white; border-radius: 50px; font-weight: 600; }
+.dash-center-card:hover .dash-center-action { background: white; color: var(--primary); }
+
+/* Liste Modalı için */
+.dash-list-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; justify-content:center; align-items:center;}
+.dash-list-content { background:white; width:500px; max-height:80vh; border-radius:20px; padding:30px; overflow-y:auto; position:relative; }
+.dash-list-item { padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+.dash-list-item:hover { background:#f9f9f9; }
+.dash-list-item.done { color:var(--success); text-decoration:line-through; }
 </style>
 </head>
+<div id="dashListModal" class="dash-list-modal">
+    <div class="dash-list-content">
+        <button onclick="document.getElementById('dashListModal').style.display='none'" style="position:absolute; right:20px; top:20px; border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        <h3 id="dashListTitle" style="margin-top:0; color:var(--primary); border-bottom:2px solid var(--accent); padding-bottom:10px;">Liste</h3>
+        <div id="dashListBody"></div>
+    </div>
+</div>
 <body>
 
 <div id="wordTooltip"></div>
 <div id="toast" class="toast"></div>
 
 <div class="app-container">
-  <div class="sidebar">
+<div class="sidebar">
     <h2>English Hub</h2>
     <div class="quick-dict-box">
         <input type="text" id="quickDic" class="quick-dict-input" placeholder="🔍 Hızlı Sözlük..." onkeypress="handleQuickDict(event)">
@@ -315,7 +379,6 @@ body {
     <button class="nav-btn" onclick="switchCategory('unknowns')" style="color:#ff7675;">🚫 Unknown Words</button>
     <button class="nav-btn" onclick="switchCategory('favorites')" style="color:#f1c40f;">⭐ Favorites</button> 
     <button class="nav-btn" onclick="switchCategory('grammar')">📘 Grammar</button>
-    <button class="nav-btn" onclick="switchCategory('question')">❓ Questions</button>
     <button class="nav-btn" onclick="switchCategory('notes')">📝 My Notes</button>
     <div style="height:1px; background:rgba(255,255,255,0.1); margin:5px 0;"></div>
     <button class="nav-btn" onclick="switchCategory('analytics')">📊 Analizler</button>
@@ -389,16 +452,12 @@ body {
     
     <div id="externalAppView" style="display:none; width:100%; height:100%; flex-direction:column;">
         <div class="book-top-bar">
-            <button class="back-btn" onclick="closeExternalApp()">← Vazgeç</button>
-            <strong id="appTitle" style="color:var(--primary);">Uygulama</strong>
-            <div style="flex:1; display:flex; justify-content:center; align-items:center; gap:15px;">
-                <div style="background:#f1c40f; color:#fff; padding:5px 20px; border-radius:20px; font-weight:bold; box-shadow:0 2px 10px rgba(0,0,0,0.1);">⏱️ <span id="externalTimerDisplay">00:00</span></div>
-                <button onclick="finishExternalGame()" style="background:var(--success); color:white; border:none; padding:8px 20px; border-radius:20px; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(39, 174, 96, 0.4);">🏁 Çalışmayı Bitir ve Kaydet</button>
-            </div>
-            <div style="width:50px;"></div>
-        </div>
+            <button class="back-btn" onclick="closeExternalApp()">← Kapat</button>
+            <strong id="appTitle" style="color:var(--primary); margin-left: 20px;">Uygulama</strong>
+            <div style="flex:1;"></div> </div>
         <iframe id="appFrame" style="flex:1; border:none; width:100%; height:100%;"></iframe>
     </div>
+
 </div> <div class="modal-overlay" id="flashcardModal" style="display:none; align-items:center; justify-content:center;">
     <div class="modal" style="height:auto; width:600px; background:transparent; box-shadow:none;">
         <div id="flashcardContainer" style="text-align:center;"></div>
@@ -417,37 +476,54 @@ body {
 
 <div class="modal-overlay" id="adminModal">
   <div class="modal">
-    <div style="display:flex; justify-content:space-between; align-items:center;"><h3>Veri Yönetimi</h3><button onclick="closeAdmin()" style="border:none; background:none; font-size:1.5em; cursor:pointer;">&times;</button></div>
-    <div class="backup-section">
-        <strong style="color:var(--text-color);">Tam Sistem Yedekleme:</strong>
-        <div style="display:flex; gap:10px;">
-            <button class="backup-btn dl-btn" onclick="exportData()">💾 İndir</button>
-            <button class="backup-btn ul-btn" onclick="document.getElementById('restoreFile').click()">📂 Yükle</button>
-            <input type="file" id="restoreFile" style="display:none;" accept=".json" onchange="importData(this)">
-        </div>
-        <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ccc;"><strong style="color:var(--error);">Acil Durum:</strong><button onclick="removeDuplicates()" style="padding:8px 20px; background:var(--error); color:white; border:none; border-radius:20px; cursor:pointer; font-weight:bold; font-size:0.8rem; margin-left:10px;">♻ Temizle</button></div>
-    </div>
-    
-    <div style="margin-bottom:20px; padding:15px; background:#ffebee; border-radius:15px; border:1px solid #ef9a9a;">
-        <strong style="color:#c62828;">🚨 İlerleme Sıfırlama Bölgesi</strong>
-        <p style="font-size:0.85rem; color:#c62828; margin:5px 0;">Okunan kitaplar, kelime ezberleri ve test sonuçları tamamen SIFIRLANACAK. İçerikler silinmeyecek.</p>
-        <button onclick="resetProgress()" style="width:100%; padding:12px; background:#c62828; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">🔥 TÜM İLERLEMEYİ SIFIRLA</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="color:var(--primary); margin:0; font-weight:800; letter-spacing:-1px;">⚙️ Data Manager Pro</h2>
+        <button onclick="closeAdmin()" style="border:none; background:none; font-size:2rem; cursor:pointer; color:#95a5a6;">&times;</button>
     </div>
 
-    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-        <select id="inputCategory" style="padding:12px; border:1px solid #dfe6e9; border-radius:12px; flex:1; font-family:var(--font-main);">
-            <option value="reading">Reading</option>
-            <option value="vocabulary">Vocabulary (Kelime)</option>
-            <option value="idioms">Vocabulary (Deyim)</option>
-            <option value="phrases">Vocabulary (Kalıplar)</option>
-            <option value="grammar">Grammar</option>
-            <option value="question">Questions (Test)</option>
-        </select>
-        <button onclick="clearCategoryData()" style="background:var(--error); color:white; border:none; padding:12px; border-radius:12px; cursor:pointer;">Sıfırla</button>
+    <div class="admin-grid-top">
+        <div class="admin-box box-backup">
+            <div class="admin-box-title">💾 Sistem Yedekleme</div>
+            <div class="backup-actions">
+                <button class="backup-btn dl-btn" onclick="exportData()">İndir (.json)</button>
+                <button class="backup-btn ul-btn" onclick="document.getElementById('restoreFile').click()">Yükle</button>
+                <input type="file" id="restoreFile" style="display:none;" accept=".json" onchange="importData(this)">
+            </div>
+            <div style="font-size:0.8rem; color:#7f8c8d; margin-top:5px;">Verilerinizi düzenli olarak yedeklemeniz önerilir.</div>
+        </div>
+
+        <div class="admin-box box-danger">
+            <div class="admin-box-title" style="color:var(--error);">🚨 Tehlikeli Bölge</div>
+            <div class="backup-actions">
+                <button class="backup-btn danger-btn" onclick="resetProgress()">🔥 İlerlemeyi Sıfırla</button>
+                <button class="backup-btn danger-btn" onclick="clearGameLogs()">🎮 Oyun Puanı Sil</button>
+                <button class="backup-btn danger-btn" onclick="removeDuplicates()">♻ Çiftleri Sil</button>
+            </div>
+            <div style="font-size:0.8rem; color:#fab1a0; margin-top:5px;">Dikkat: Bu işlemler geri alınamaz!</div>
+        </div>
     </div>
-    <input type="text" id="inputTitle" placeholder="Başlık" style="padding:12px; display:none; border:1px solid #dfe6e9; border-radius:12px; margin-top:10px;">
-    <textarea id="bulkInput" placeholder="Verileri buraya yapıştır..."></textarea>
-    <button onclick="saveData()" style="padding:15px; background:var(--success); color:white; border:none; font-weight:bold; cursor:pointer; border-radius:12px;">KAYDET</button>
+
+    <div class="input-area-wrapper">
+        <h3 style="margin:0 0 15px 0; color:var(--primary);">📝 Yeni İçerik Ekle</h3>
+        
+        <div class="admin-input-row">
+            <select id="inputCategory" class="admin-select">
+                <option value="reading">📖 Reading</option>
+                <option value="vocabulary">📗 Vocabulary (Kelime)</option>
+                <option value="idioms">🔮 Vocabulary (Deyim)</option>
+                <option value="phrases">💬 Vocabulary (Kalıplar)</option>
+                <option value="grammar">📘 Grammar</option>
+                <option value="question">❓ Questions (Test)</option>
+            </select>
+            <button onclick="clearCategoryData()" class="backup-btn danger-btn" style="flex:0; min-width:140px;">Bu Kategoriyi Sil</button>
+        </div>
+
+        <input type="text" id="inputTitle" placeholder="Başlık (Opsiyonel)" style="width:100%; padding:15px; border:2px solid #dfe6e9; border-radius:15px; font-family:var(--font-main); display:none; margin-bottom:15px;">
+        
+        <textarea id="bulkInput" class="admin-textarea" placeholder="Verilerinizi buraya yapıştırın... (JSON formatı veya Düz Metin)"></textarea>
+        
+        <button onclick="saveData()" class="save-btn-large">💾 İÇERİĞİ KAYDET VE YAYINLA</button>
+    </div>
   </div>
 </div>
 <script>
@@ -823,6 +899,7 @@ function openExternalGame(url, title) {
     document.getElementById('analyticsView').style.display = 'none'; 
     document.getElementById('openBookView').style.display = 'none';
     
+    // Okuma sayacı açıksa durdur
     stopReadingTimer();
 
     const view = document.getElementById('externalAppView'); 
@@ -832,65 +909,22 @@ function openExternalGame(url, title) {
     if(titleEl) titleEl.innerText = title; 
     if(frame) frame.src = url; 
     view.style.display = 'flex';
-    
-    if (externalAppStartTime === 0) {
-        externalAppStartTime = Date.now();
-        localStorage.setItem('tempExternalTimer', externalAppStartTime);
-    }
-    startExternalTimerUI();
 }
 
-function startExternalTimerUI() {
-    clearInterval(externalTimerInterval);
-    updateExternalTimerDisplay();
-    externalTimerInterval = setInterval(updateExternalTimerDisplay, 1000);
-}
-
-function updateExternalTimerDisplay() {
-    if(!externalAppStartTime) return;
-    const diff = Math.floor((Date.now() - externalAppStartTime) / 1000);
-    const m = Math.floor(diff / 60).toString().padStart(2,'0');
-    const s = (diff % 60).toString().padStart(2,'0');
-    const el = document.getElementById('externalTimerDisplay');
-    if(el) el.innerText = `${m}:${s}`;
-}
-
-function finishExternalGame() {
-    closeExternalApp();
-}
-
-function closeExternalApp() { 
-    clearInterval(externalTimerInterval);
-
-    let savedStartTime = parseInt(localStorage.getItem('tempExternalTimer'));
-    if(savedStartTime > 0) {
-        const duration = Math.round((Date.now() - savedStartTime) / 1000);
-        const titleEl = document.getElementById('appTitle');
-        const title = titleEl ? titleEl.innerText : "External App";
-
-        if(duration > 5) { 
-            let points = Math.round((duration / 60) * 20); 
-            if(points < 1 && duration > 30) points = 1; 
-
-            logActivity('external_game', title, 'Çalışma Süresi', duration, points);
-            showToast(`${title} Kaydedildi: ${Math.floor(duration/60)}dk ${duration%60}sn (+${points} Puan)`);
-        }
-    }
-
-    externalAppStartTime = 0;
-    localStorage.removeItem('tempExternalTimer');
-    const timerDisplay = document.getElementById('externalTimerDisplay');
-    if(timerDisplay) timerDisplay.innerText = "00:00";
+function closeExternalApp() {
+    // Varsa zamanlayıcıyı garanti durdur
+    if(typeof externalTimerInterval !== 'undefined') clearInterval(externalTimerInterval);
 
     const view = document.getElementById('externalAppView');
     const frame = document.getElementById('appFrame');
-    if(view) view.style.display = 'none'; 
-    if(frame) frame.src = "";
     
+    if(view) view.style.display = 'none'; 
+    if(frame) frame.src = ""; // Iframe'i boşaltarak yükü azalt
+    
+    // Ana ekrana dön
     switchCategory('reading'); 
     renderLibrary(); 
 }
-
 /* 5. WORD MASTER */
 function openWordMasterApp() {
     closeBook();
@@ -1563,48 +1597,200 @@ function switchCategory(cat) {
 }
 
 function renderLibrary(q="") {
+    // 1. Ekran Temizliği
     document.getElementById('analyticsView').style.display='none'; 
     document.getElementById('libraryHeader').style.display='flex'; 
     document.getElementById('externalAppView').style.display='none';
     const g=document.getElementById('libraryGrid'); 
-    g.className='library-grid'; g.style.display='grid'; g.innerHTML='';
+    g.innerHTML=''; 
+    
+    // 2. Veri Filtreleme
     let f=contentData.filter(i=>i.category===currentCategory); 
     if(q) f=f.filter(i=>i.title.toLowerCase().includes(q.toLowerCase()));
 
+    // 3. Sıralama (A1 -> C2)
     if(currentCategory==='reading' || currentCategory==='question' || currentCategory==='vocabulary'){
         const levels = {"A1":1, "A2":2, "B1":3, "B2":4, "C1":5, "C2":6};
         f.sort((a, b) => {
             const getVal = (t) => { let m = t.match(/\b(A1|A2|B1|B2|C1|C2)\b/i); return m ? levels[m[0].toUpperCase()] : 99; };
             let valA = getVal(a.title); let valB = getVal(b.title);
-            if(valA !== valB) return valA - valB; return a.title.localeCompare(b.title, 'tr', {numeric:true});
+            if(valA !== valB) return valA - valB; 
+            return a.title.localeCompare(b.title, 'tr', {numeric:true});
         });
     }
 
-    if((currentCategory === 'reading' || currentCategory === 'question' || currentCategory === 'vocabulary') && !q) {
-        if(currentLevelFolder === null) {
-            ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].forEach(lvl => {
-                const count = f.filter(i => new RegExp(`\\b${lvl}\\b`, 'i').test(i.title)).length;
-                if(count > 0) {
-                    const folder = document.createElement('div'); folder.className = 'book-card folder-card';
-                    folder.innerHTML = `<div class="folder-icon">📂</div><div class="folder-info"><div class="book-title">${lvl} Seviyesi</div><div class="folder-count">${count} Öge</div></div>`;
-                    folder.onclick = () => { currentLevelFolder = lvl; renderLibrary(); };
-                    g.appendChild(folder);
-                }
-            });
-            f.forEach(i => { if(!/\b(A1|A2|B1|B2|C1|C2)\b/i.test(i.title)) renderBookCard(i, g); });
-        } else {
-            const backBtn = document.createElement('div'); backBtn.className = 'book-card new-item-card'; 
-            backBtn.innerHTML = '<div>⬅ GERİ DÖN</div>'; backBtn.onclick = () => { currentLevelFolder = null; renderLibrary(); }; g.appendChild(backBtn);
-            f.filter(i => new RegExp(`\\b${currentLevelFolder}\\b`, 'i').test(i.title)).forEach(i => { renderBookCard(i, g); });
-        }
-    } else { f.forEach(i => renderBookCard(i, g)); }
+    // --- GÖRÜNTÜLEME SENARYOLARI ---
+    
+    // SENARYO 1: ANA KATEGORİ GÖRÜNÜMÜ (Henüz klasör seçilmemiş)
+    if((currentCategory === 'reading' || currentCategory === 'question' || currentCategory === 'vocabulary') && !q && currentLevelFolder === null) {
+        g.className='library-grid'; g.style.display='grid'; // Standart Grid
+        
+        // Klasörleri Listele
+        ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].forEach(lvl => {
+            const count = f.filter(i => new RegExp(`\\b${lvl}\\b`, 'i').test(i.title)).length;
+            if(count > 0) {
+                const folder = document.createElement('div'); folder.className = 'book-card folder-card';
+                folder.innerHTML = `<div class="folder-icon">📂</div><div class="folder-info"><div class="book-title">${lvl} Seviyesi</div><div class="folder-count">${count} Öge</div></div>`;
+                folder.onclick = () => { currentLevelFolder = lvl; renderLibrary(); };
+                g.appendChild(folder);
+            }
+        });
+        // Klasörsüz öğeler
+        f.forEach(i => { if(!/\b(A1|A2|B1|B2|C1|C2)\b/i.test(i.title)) renderBookCard(i, g); });
 
+    } 
+    // SENARYO 2: ÖZEL DASHBOARD GÖRÜNÜMÜ (Bir seviye klasörüne girilmiş)
+    else if (currentLevelFolder !== null && !q) {
+        g.className = ''; g.style.display = 'block'; // Grid'i kapat
+        
+        let levelItems = f.filter(i => new RegExp(`\\b${currentLevelFolder}\\b`, 'i').test(i.title));
+        
+        // İstatistikler
+        let total = levelItems.length;
+        let completed = levelItems.filter(i => i.completed).length;
+        let percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+        
+        // Sıradaki Görev
+        let nextTask = levelItems.find(i => !i.completed);
+        
+        // Orta Kart Metinleri
+        let centerTitle = nextTask ? nextTask.title : "🎉 Harika!";
+        let centerLabel = nextTask ? "SIRADAKİ GÖREV" : "SEVİYE TAMAMLANDI";
+        let centerAction = nextTask ? "BAŞLA 🚀" : "LİSTEYE GÖZ AT ↺";
+        let clickAction = nextTask ? `openBook(contentData.find(x=>x.id=='${nextTask.id}'))` : `openDashList('all')`;
+
+        // DASHBOARD HTML (Senin Tasarımın)
+        g.innerHTML = `
+            <div style="padding:20px; margin-bottom:10px;">
+                <button onclick="currentLevelFolder=null; renderLibrary()" class="back-btn">⬅ Seviye Listesine Dön</button>
+            </div>
+            
+            <div class="dash-wrapper">
+                <div class="dash-stat-box" onclick="openDashList('all')">
+                    <div class="dash-stat-title">Toplam Konu</div>
+                    <div class="dash-stat-value">${total}</div>
+                    <div class="dash-stat-sub">Listeyi Gör ☰</div>
+                </div>
+
+                <div class="dash-center-card" onclick="${clickAction}">
+                    <div class="dash-center-label">${centerLabel}</div>
+                    <div class="dash-center-title">${centerTitle}</div>
+                    <div class="dash-center-action">${centerAction}</div>
+                </div>
+
+                <div class="dash-stat-box" onclick="openDashList('completed')">
+                    <div class="dash-stat-title">Tamamlanan</div>
+                    <div class="dash-stat-value">${completed}</div>
+                    <div class="dash-stat-sub">%${percent} Tamamlandı</div>
+                </div>
+            </div>
+        `;
+        window.tempLevelItems = levelItems; // Listeyi sakla
+    } 
+    // SENARYO 3: STANDART LİSTELEME (Arama vb.)
+    else {
+        g.className='library-grid'; g.style.display='grid';
+        f.forEach(i => renderBookCard(i, g)); 
+    }
+
+    // Butonlar
     if(currentCategory==='question' && currentLevelFolder === null){ 
         const n=document.createElement('div'); n.className='book-card new-item-card'; n.innerHTML='<div>+ TEST EKLE</div>'; n.onclick=()=>document.getElementById('quickQuizModal').style.display='flex'; g.appendChild(n); 
     }
     if(currentCategory==='notes'){ 
         const n=document.createElement('div'); n.className='book-card new-item-card'; n.innerHTML='<div>+ NOT EKLE</div>'; n.onclick=createNewNote; g.appendChild(n); 
     }
+}
+
+// LİSTE AÇMA FONKSİYONU
+function openDashList(type) {
+    const modal = document.getElementById('dashListModal');
+    const title = document.getElementById('dashListTitle');
+    const body = document.getElementById('dashListBody');
+    const items = window.tempLevelItems || [];
+    
+    body.innerHTML = ""; 
+    modal.style.display = 'flex'; 
+
+    if (type === 'all') {
+        title.innerText = "📋 Tüm Konular";
+        items.forEach(i => {
+            let status = i.completed ? '<span style="color:green; font-weight:bold;">✔</span>' : '<span style="color:#ccc;">⭕</span>';
+            let rowClass = i.completed ? 'dash-list-item done' : 'dash-list-item';
+            body.innerHTML += `
+                <div class="${rowClass}" onclick="document.getElementById('dashListModal').style.display='none'; openBook(contentData.find(x=>x.id=='${i.id}'))">
+                    <div style="display:flex; gap:10px; align-items:center;">${status} <span>${i.title}</span></div>
+                    <span style="color:#ccc;">➔</span>
+                </div>`;
+        });
+    } else {
+        title.innerText = "✅ Tamamlananlar";
+        let doneItems = items.filter(i => i.completed);
+        if(doneItems.length === 0) {
+            body.innerHTML = "<div style='text-align:center; padding:20px; color:#999;'>Henüz tamamlanan konu yok.</div>";
+        }
+        doneItems.forEach(i => {
+            body.innerHTML += `
+                <div class="dash-list-item" onclick="document.getElementById('dashListModal').style.display='none'; openBook(contentData.find(x=>x.id=='${i.id}'))">
+                    <span style="color:green">✔ ${i.title}</span> 
+                    <span>➔</span>
+                </div>`;
+        });
+    }
+}
+
+// LİSTE AÇMA FONKSİYONU
+function openDashList(type) {
+    const modal = document.getElementById('dashListModal');
+    const title = document.getElementById('dashListTitle');
+    const body = document.getElementById('dashListBody');
+    const items = window.tempLevelItems || [];
+    
+    body.innerHTML = ""; 
+    modal.style.display = 'flex'; 
+
+    if (type === 'all') {
+        title.innerText = "📋 Tüm Konular";
+        items.forEach(i => {
+            let status = i.completed ? '<span style="color:green; font-weight:bold;">✔</span>' : '<span style="color:#ccc;">⭕</span>';
+            let rowClass = i.completed ? 'dash-list-item done' : 'dash-list-item';
+            body.innerHTML += `
+                <div class="${rowClass}" onclick="document.getElementById('dashListModal').style.display='none'; openBook(contentData.find(x=>x.id=='${i.id}'))">
+                    <div style="display:flex; gap:10px; align-items:center;">${status} <span>${i.title}</span></div>
+                    <span style="color:#ccc;">➔</span>
+                </div>`;
+        });
+    } else {
+        title.innerText = "✅ Tamamlananlar";
+        let doneItems = items.filter(i => i.completed);
+        if(doneItems.length === 0) {
+            body.innerHTML = "<div style='text-align:center; padding:20px; color:#999;'>Henüz tamamlanan konu yok.</div>";
+        }
+        doneItems.forEach(i => {
+            body.innerHTML += `
+                <div class="dash-list-item" onclick="document.getElementById('dashListModal').style.display='none'; openBook(contentData.find(x=>x.id=='${i.id}'))">
+                    <span style="color:green">✔ ${i.title}</span> 
+                    <span>➔</span>
+                </div>`;
+        });
+    }
+}
+
+// YENİ YARDIMCI FONKSİYON: Zincirleme Görüntüleme
+function renderProgressiveList(items, container) {
+    let chainBroken = false;
+    items.forEach((item, index) => {
+        // Eğer zincir koptuysa (önceki tamamlanmadıysa) sonrakileri çizme
+        if (chainBroken) return;
+
+        renderBookCard(item, container);
+
+        // Eğer bu kitap tamamlanmamışsa, zinciri burada kes (bir sonraki döngüde çizim yapılmayacak)
+        // Böylece kullanıcı sadece "Tamamladıklarını" + "Sıradaki Tek Görevini" görür.
+        if (!item.completed) {
+            chainBroken = true;
+        }
+    });
 }
 
 function renderBookCard(i, container) {
@@ -1747,14 +1933,24 @@ function saveData() {
     closeAdmin(); renderLibrary();
 }
 function removeDuplicates() {
-    if(!confirm("Temizle?")) return;
+    if(!confirm("Yinelenen içerikler temizlensin mi?")) return;
     const unique = []; const map = new Map();
     contentData.forEach(item => { if(!map.has(item.id)){ map.set(item.id, true); unique.push(item); }});
     contentData = unique;
     localStorage.setItem('englishWorkbookData', JSON.stringify(contentData));
-    location.reload();
+    showToast("Temizlendi!"); setTimeout(() => location.reload(), 1000);
 }
-function createNewNote() { contentData.push({id:Date.now().toString(),category:'notes',title:'Yeni Not',pages:["",""], styles:[]}); localStorage.setItem('englishWorkbookData',JSON.stringify(contentData)); openBook(contentData[contentData.length-1]); }
+
+function clearGameLogs() {
+    if(!confirm("Geçmişteki tüm 'External Game' (Oyun) puanları ve kayıtları silinsin mi?\n\nBu işlem toplam puanını düşürecektir.")) return;
+    
+    // Sadece external_game olmayanları tut, diğerlerini filtrele
+    userActivityLog = userActivityLog.filter(log => log.type !== 'external_game');
+    localStorage.setItem('userActivityLog', JSON.stringify(userActivityLog));
+    
+    showToast("Oyun geçmişi ve puanları silindi!");
+    setTimeout(() => location.reload(), 1000);
+}function createNewNote() { contentData.push({id:Date.now().toString(),category:'notes',title:'Yeni Not',pages:["",""], styles:[]}); localStorage.setItem('englishWorkbookData',JSON.stringify(contentData)); openBook(contentData[contentData.length-1]); }
 function deleteItem(e,id){ e.stopPropagation(); if(confirm("Sil?")){contentData=contentData.filter(x=>x.id!==id); localStorage.setItem('englishWorkbookData',JSON.stringify(contentData)); renderLibrary();} }
 function setupVoice() {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -1890,9 +2086,5 @@ function openAdmin() {
     document.getElementById('bulkInput').value = ""; // Temiz aç
 }
 </script>
-<script src="js/ui.js"></script>
-<script src="js/storage.js"></script>
-<script src="js/stats.js"></script>
-<script src="app.js"></script>
 </body>
 </html>

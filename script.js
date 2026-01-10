@@ -1,6 +1,4 @@
-/* ENGLISH LEARNING PRO HUB - APP SCRIPT */
-/* (index.html içindeki <script> bloğunun TAMAMI buraya taşındı) */
-/* --- ENGLISH PRO HUB MASTER SCRIPT (V35.0 STABLE) --- */
+/* --- ENGLISH PRO HUB MASTER SCRIPT (V35.0 STABLE) - PART 1 --- */
 
 /* 1. VERİTABANI VE DEĞİŞKENLER */
 function safeLoad(key, defaultVal) {
@@ -28,8 +26,6 @@ let recognition;
 let isListening = false; 
 let currentTargetId = "";
 let currentLevelFolder = null; 
-let activeExternalAppType = null;
-// 'grammar' | 'phrase' | null
 
 // GAME STATE
 let wmState = 'setup';
@@ -132,10 +128,11 @@ function calculateDetailedScore(dateStr) {
     logs.forEach(l => {
         let pts = Number(l.points) || 0;
         if(pts > 0) report.totalScore += pts;
-      if(l.duration && l.type !== 'external_game') {
-    report.timeMinutes += Math.floor(l.duration / 60);
-}  
-       
+        
+        if(l.duration) {
+            if(l.type === 'external_game') report.gameMinutes += Math.floor(l.duration / 60);
+            else report.timeMinutes += Math.floor(l.duration / 60);
+        }
     });
 
     if(userStats.dailyActivity && userStats.dailyActivity[dateStr]) {
@@ -368,14 +365,6 @@ function isFavorite(en) { return userFavorites.some(f => f.en === en); }
 
 /* 4. HARİCİ OYUNLAR */
 function openExternalGame(url, title) {
-// Açılan external sayfanın türünü belirle
-if (title.toLowerCase().includes('grammar')) {
-    activeExternalAppType = 'grammar';
-} else if (title.toLowerCase().includes('phrase')) {
-    activeExternalAppType = 'phrase';
-} else {
-    activeExternalAppType = null;
-}
     document.getElementById('libraryGrid').style.display = 'none'; 
     document.getElementById('libraryHeader').style.display = 'none'; 
     document.getElementById('analyticsView').style.display = 'none'; 
@@ -426,9 +415,13 @@ function closeExternalApp() {
         const titleEl = document.getElementById('appTitle');
         const title = titleEl ? titleEl.innerText : "External App";
 
-      if(duration > 5) { 
-    showToast(`${title} kapatıldı`);
-}
+        if(duration > 5) { 
+            let points = Math.round((duration / 60) * 20); 
+            if(points < 1 && duration > 30) points = 1; 
+
+            logActivity('external_game', title, 'Çalışma Süresi', duration, points);
+            showToast(`${title} Kaydedildi: ${Math.floor(duration/60)}dk ${duration%60}sn (+${points} Puan)`);
+        }
     }
 
     externalAppStartTime = 0;
@@ -443,8 +436,6 @@ function closeExternalApp() {
     
     switchCategory('reading'); 
     renderLibrary(); 
-activeExternalAppType = null;
-
 }
 
 /* 5. WORD MASTER */
@@ -594,6 +585,7 @@ function renderWordMasterGame(pL, pR) {
 }
 function selectWmType(type) { wmType = type; renderSpread(); }
 function setWmMode(mode) { wmMode = mode; renderSpread(); }
+/* --- ENGLISH PRO HUB MASTER SCRIPT - PART 2 --- */
 
 /* 6. READING & PAGINATION (BUG FIX) */
 function openBook(i) {
@@ -638,6 +630,7 @@ function openBook(i) {
     else if(currentCategory==='grammar') {
         document.getElementById('notebookTools').style.display='flex'; 
         document.getElementById('liveStats').style.display='flex';
+        startReadingTimer(); 
     }
     else if(currentCategory==='question') {
         document.getElementById('liveStats').style.display='flex';
@@ -1105,10 +1098,6 @@ function paginateVocab(w, isListMode = false){
 }
 
 function switchCategory(cat) {
-// SADECE Grammar Practice ve Phrase Master açıkken otomatik kapat
-if (activeExternalAppType === 'grammar' || activeExternalAppType === 'phrase') {
-    closeExternalApp();
-}
     currentCategory=cat; currentLevelFolder = null; closeBook();
     document.querySelectorAll('.nav-btn').forEach(b=>{ b.classList.remove('active'); if(b.getAttribute('onclick').includes(cat)) b.classList.add('active'); });
     
@@ -1227,10 +1216,6 @@ function startReadingTimer() {
     if(!isTogglingContext) { activeReadingSeconds = 0; currentQuizTime = 0; }
     isTogglingContext = false;
     document.getElementById('liveTimer').innerText = "00:00";
-if(currentCategory === 'grammar') {
-    document.getElementById('liveTimer').innerText = "--:--";
-    return;
-}
     readingTimerInterval = setInterval(() => {
         if(currentCategory === 'reading' || currentCategory === 'grammar') {
             activeReadingSeconds++;
