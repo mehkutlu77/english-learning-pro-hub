@@ -305,29 +305,110 @@ body {
 @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* RESPONSIVE */
+/* --- MOBİL UYUMLU FİNAL AYARLARI (V35.0 FIX) --- */
+
+/* 1. Tablet ve Küçük Ekran Ayarları */
 @media (max-width: 1200px) {
     .wm-card-container { width: 500px; height: 300px; }
     .wm-card-front, .wm-card-back { font-size: 2.5rem; }
 }
+
+/* 2. Mobil Ayarları (TELEFONLAR İÇİN) */
 @media (max-width: 900px) {
-    .app-container { flex-direction: column; height: auto; min-height: 100vh; width: 100%; border-radius: 0; overflow-y: auto; }
-    .sidebar { width: 100%; height: auto; padding: 15px; overflow-x: auto; flex-direction: row; flex-wrap: wrap; justify-content: center; }
+    /* Sayfa Kilidini Açma (En Önemli Kısım) */
+    body {
+        height: auto !important;
+        overflow-y: auto !important;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    /* Ana Kutuyu Esnek Yap */
+    .app-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        width: 100%;
+        border-radius: 0;
+        overflow: visible;
+        box-shadow: none;
+    }
+
+    /* Yan Menüyü (Sidebar) Yatay Yap */
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 10px;
+        overflow-x: auto;
+        white-space: nowrap;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        gap: 10px;
+        flex-shrink: 0;
+    }
     .sidebar h2 { display: none; }
-    .nav-btn { font-size: 0.8rem; padding: 8px 15px; }
-    .workbook-area { height: auto; min-height: calc(100vh - 100px); }
+    .nav-btn { font-size: 0.85rem; padding: 8px 12px; flex-shrink: 0; }
+    .quick-dict-box { min-width: 180px; }
+
+    /* Çalışma Alanını Rahatlat */
+    .workbook-area {
+        height: auto;
+        min-height: calc(100vh - 70px);
+        overflow: visible;
+    }
+
+    /* Kitap Görünümü */
     .book-spread { flex-direction: column; overflow-y: visible; height: auto; }
-    .single-page { height: auto; border-bottom: 1px solid #eee; padding: 30px; overflow: visible; }
+    .single-page { 
+        height: auto; 
+        border-bottom: 1px solid #eee; 
+        padding: 20px; 
+        overflow: visible; 
+        font-size: 1.1rem; 
+    }
     #pageRight { display: block; border-left: none; }
     .spine-shadow { display: none; }
-    .wm-card-container { width: 90%; height: 250px; }
-    .wm-card-front, .wm-card-back { font-size: 2rem; }
+
+    /* Oyun ve Kartlar */
+    .wm-card-container { width: 95%; height: 280px; margin-bottom: 20px; }
+    .wm-card-front, .wm-card-back { font-size: 1.8rem; padding: 10px; }
     .vocab-layout { grid-template-columns: 1fr; }
     .quiz-sticky-header { flex-direction: column; gap: 10px; position: relative; }
+
+    /* Yeni Dashboard (Kutucuklar) Mobil Ayarı */
+    .dash-wrapper { flex-direction: column; height: auto; gap: 20px; padding-bottom: 30px; }
+    .dash-stat-box { width: 100%; flex-direction: row; justify-content: space-between; align-items: center; padding: 20px; }
+    .dash-stat-value { font-size: 1.8rem; margin: 0; }
+    .dash-center-card { width: 100%; height: auto; padding: 30px; }
+
+    /* Admin Paneli (Veri Yükleme) Mobil Ayarı */
+    .modal { 
+        width: 100%; 
+        height: 100%; 
+        max-height: 100vh; 
+        border-radius: 0; 
+        padding: 15px; 
+        overflow-y: auto !important; 
+    }
+    .admin-grid-top { grid-template-columns: 1fr; gap: 15px; }
+    .admin-input-row { flex-direction: column; gap: 10px; }
+    .backup-actions { flex-direction: column; }
+    .backup-btn { width: 100%; padding: 12px; }
+    .admin-textarea { height: 150px; }
+    .save-btn-large { padding: 15px; font-size: 1rem; }
 }
+
+/* Scrollbar Tasarımı (PC İçin) */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #f1f2f6; }
 ::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #636e72; }
+
+/* Mobilde Scrollbar'ı Gizle (Daha Temiz Görünüm) */
+@media (max-width: 900px) {
+    ::-webkit-scrollbar { width: 0px; background: transparent; }
+}
 /* --- LEVEL DASHBOARD STYLES (NEW) --- */
 .dash-wrapper {
     display: flex; justify-content: center; align-items: center; gap: 40px;
