@@ -3,21 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Phrase Master Pro - Detailed Stats</title>
+<title>Phrase Master Pro - Ultimate Fixed</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-    /* --- TEMEL AYARLAR --- */
+    /* --- TASARIM SİSTEMİ (20CM / 750PX KARE) --- */
     :root {
         --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         --card-bg: #ffffff;
         --text-dark: #2c3e50;
         --text-light: #95a5a6;
-        --accent-grad: linear-gradient(to right, #11998e, #38ef7d);
+        --accent-grad: linear-gradient(to right, #11998e, #38ef7d); /* Yeşil/Teal */
         --badge-bg: #f1f2f6;
         --shadow: 0 20px 60px rgba(0,0,0,0.15);
+        --success: #27ae60;
+        --danger: #c0392b;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -33,11 +35,11 @@
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         transition: transform 0.4s ease-in-out, opacity 0.4s;
-        opacity: 0; pointer-events: none; transform: translateX(100%);
+        opacity: 0; pointer-events: none; transform: translateX(100%); z-index: 0;
     }
-    .screen.active { opacity: 1; pointer-events: all; transform: translateX(0); }
+    .screen.active { opacity: 1; pointer-events: all; transform: translateX(0); z-index: 10; }
 
-    /* --- ANA KART (20CM / 750PX KARE) --- */
+    /* --- ANA KART --- */
     .main-card {
         background: var(--card-bg);
         width: 750px; height: 750px;
@@ -58,10 +60,11 @@
 
     .content-center { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 20px; }
     .icon-area { font-size: 6rem; color: var(--text-dark); margin-bottom: 30px; opacity: 0.9; }
-    .word-title { font-size: 3.5rem; font-weight: 800; color: var(--text-dark); line-height: 1.1; text-align: center; }
+    .word-title { font-size: 3rem; font-weight: 800; color: var(--text-dark); line-height: 1.1; text-align: center; }
 
     .btn-action { position: absolute; bottom: 60px; background: var(--accent-grad); color: white; border: none; padding: 22px 60px; border-radius: 60px; font-size: 1.4rem; font-weight: 800; letter-spacing: 1px; cursor: pointer; box-shadow: 0 10px 25px rgba(17, 153, 142, 0.4); display: flex; align-items: center; gap: 15px; transition: transform 0.2s; width: 80%; max-width: 400px; justify-content: center; }
     .btn-action:active { transform: scale(0.96); }
+    .btn-action:disabled { background: #bdc3c7; box-shadow: none; cursor: not-allowed; }
 
     .nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: white; border: none; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; color: var(--text-dark); z-index: 5; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: 0.2s; }
     .nav-arrow:hover { transform: translateY(-50%) scale(1.1); }
@@ -88,54 +91,25 @@
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: center; justify-content: center; }
     .modal-box { background: white; width: 90%; max-width: 600px; padding: 40px; border-radius: 30px; text-align: center; position: relative; max-height: 90vh; overflow-y: auto; }
     .content-box { background: white; padding: 30px; border-radius: 30px; width: 750px; max-width: 95vw; max-height: 90vh; box-shadow: var(--shadow); overflow-y: auto; text-align: center; position: relative; }
-    
     .back-btn { position: absolute; top: 25px; left: 25px; width: 50px; height: 50px; background: white; border-radius: 50%; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; z-index: 20; }
     .btn-sm { background: #eee; border:none; padding:10px 20px; border-radius:20px; cursor:pointer; font-weight:600; color:#555; }
     textarea, select, input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-size: 1rem; font-family: 'Poppins'; }
     .settings-grid { display: grid; gap: 10px; }
     .grammar-content { text-align: left; line-height: 1.6; color: #333; margin-top: 15px; }
 
-    /* --- YENİ İSTATİSTİK TASARIMI --- */
+    /* --- İSTATİSTİK TASARIMI --- */
     .stats-layout { display: flex; flex-direction: column; gap: 20px; padding-bottom: 20px; }
-    
-    /* 1. Grafikler */
     .charts-wrapper { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
-    .chart-card { 
-        background: #f8f9fa; border-radius: 20px; padding: 15px; 
-        width: 48%; min-width: 250px; 
-        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-    }
-
-    /* 2. Seviye İlerleme Izgarası */
-    .levels-grid {
-        display: grid; 
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive Grid */
-        gap: 15px;
-        width: 100%;
-    }
-
-    .level-stat-card {
-        background: white; border: 1px solid #eee; border-radius: 15px; 
-        padding: 15px; box-shadow: 0 3px 8px rgba(0,0,0,0.03);
-        display: flex; flex-direction: column; gap: 8px;
-    }
-
+    .chart-card { background: #f8f9fa; border-radius: 20px; padding: 15px; width: 48%; min-width: 250px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+    .levels-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; width: 100%; }
+    .level-stat-card { background: white; border: 1px solid #eee; border-radius: 15px; padding: 15px; box-shadow: 0 3px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 8px; }
     .ls-header { display: flex; justify-content: space-between; align-items: center; }
     .ls-title { font-weight: 800; font-size: 1.1rem; color: #2c3e50; }
     .ls-percent { font-weight: 600; font-size: 0.9rem; color: #11998e; background: #e0f2f1; padding: 2px 8px; border-radius: 10px; }
-
     .ls-bar-bg { width: 100%; height: 10px; background: #f1f2f6; border-radius: 10px; overflow: hidden; }
     .ls-bar-fill { height: 100%; background: linear-gradient(to right, #11998e, #38ef7d); width: 0%; border-radius: 10px; transition: width 0.5s; }
-
     .ls-info { font-size: 0.85rem; color: #95a5a6; display: flex; justify-content: space-between; }
-    .ls-info b { color: #555; }
-
-    /* API Kutusu */
-    .api-box {
-        background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 15px;
-        text-align: left; font-family: monospace; font-size: 0.8rem;
-        margin-top: 10px;
-    }
+    .api-box { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 15px; text-align: left; font-family: monospace; font-size: 0.8rem; margin-top: 10px; }
     .api-code { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 5px; margin-bottom: 10px; }
 </style>
 </head>
@@ -205,29 +179,18 @@
         <div class="content-box">
             <h2 style="margin-bottom:20px; color:#2c3e50;">İstatistikler</h2>
             <div class="stats-layout">
-                
                 <div class="charts-wrapper">
-                    <div class="chart-card">
-                        <canvas id="chartET"></canvas>
-                        <p style="margin-top:10px; font-weight:bold; color:#555;">🇬🇧 İng > Tür</p>
-                    </div>
-                    <div class="chart-card">
-                        <canvas id="chartTE"></canvas>
-                        <p style="margin-top:10px; font-weight:bold; color:#555;">🇹🇷 Tür > İng</p>
-                    </div>
+                    <div class="chart-card"><canvas id="chartET"></canvas><p style="margin-top:10px; font-weight:bold; color:#555;">🇬🇧 İng > Tür</p></div>
+                    <div class="chart-card"><canvas id="chartTE"></canvas><p style="margin-top:10px; font-weight:bold; color:#555;">🇹🇷 Tür > İng</p></div>
                 </div>
-
-                <h4 style="text-align:left; color:#2c3e50; margin-bottom:-10px;">Seviye Bazlı İlerleme</h4>
-                <div class="levels-grid" id="levelProgressBox">
-                    </div>
-
+                <h4 style="text-align:left; color:#2c3e50; margin-bottom:-10px;">Seviye İlerlemesi</h4>
+                <div class="levels-grid" id="levelProgressBox"></div>
                 <div class="api-box">
                     <span style="font-weight:bold; color:#3498db; display:block; margin-bottom:5px;">🔌 Veri Yedekleme Kodu</span>
-                    <p style="font-size:0.75rem; margin-bottom:5px; color:#bdc3c7;">Bu kodu kopyalayıp başka bir cihaza yükleyebilirsiniz.</p>
-                    <code class="api-code" id="apiDataString">{"data": "..."}</code>
+                    <p style="font-size:0.75rem; margin-bottom:5px; color:#bdc3c7;">Verilerinizi kopyalayıp saklayın.</p>
+                    <code class="api-code" id="apiDataString">...</code>
                     <button class="btn-sm" style="background:#3498db; color:white; width:100%;" onclick="copyApiData()">📋 Kodu Kopyala</button>
                 </div>
-
             </div>
         </div>
     </div>
@@ -240,7 +203,7 @@
 
 <script>
 /* =========================================
-   1. GRAMER & TEMİZLİK FONKSİYONLARI
+   1. GRAMER VERİ TABANI & TEMİZLİK
 ========================================= */
 const GRAMMAR_RULES = {
     1: { title: "Present Simple Tense", content: "<strong>Genel doğruları, alışkanlıkları ve rutinleri anlatır.</strong><br><br>• <em>Olumlu:</em> Subject + V1 (He/She/It + V-s)<br>• <em>Olumsuz:</em> Don't / Doesn't + V1<br>• <em>Soru:</em> Do / Does + Subject + V1?<br><br>👉 <strong>Püf Nokta:</strong> 'He/She/It' öznelerinde fiile -s takısı gelir." },
@@ -269,9 +232,24 @@ const KEYS = { DB:"PM_CINE_DB_V1", PROG:"PM_CINE_PROG", STAT:"PM_CINE_STAT", MIS
 const ICONS = ["fa-pen-nib", "fa-graduation-cap", "fa-earth-americas", "fa-book-open", "fa-lightbulb", "fa-puzzle-piece", "fa-rocket", "fa-comments", "fa-bookmark"];
 
 window.onload = () => {
-    loadData();
-    if(Object.keys(DB).length===0) DB = { "A1": [{title:"SET 1 - Demo", items:[{eng:"apple",tr:"elma"},{eng:"run",tr:"koşmak"}]}] };
+    // GÜVENLİ BAŞLANGIÇ (TRY-CATCH)
+    try {
+        loadData();
+    } catch(e) {
+        console.error("Veri yükleme hatası:", e);
+        // Hata varsa verileri sıfırlama seçeneği sunulabilir ama şimdilik demo ile devam ediyoruz.
+    }
+
+    if(!DB || Object.keys(DB).length===0) {
+        // DEMO VERİ
+        DB = { "A1": [{title:"SET 1 - Demo", items:[{eng:"apple",tr:"elma"},{eng:"run",tr:"koşmak"}]}] };
+    }
+    
     if(!DB[currentLevel] && Object.keys(DB).length>0) currentLevel = Object.keys(DB)[0];
+    
+    // Güvenlik kontrolü
+    if(!PROGRESS[gameMode]) PROGRESS[gameMode] = {};
+    
     viewIndex = PROGRESS[gameMode][currentLevel] || 0;
     renderTabs(); showMenu();
 };
@@ -284,7 +262,8 @@ function showMenu() { renderContent(); show("menuScreen"); }
 
 function renderTabs() {
     let c = document.getElementById("levelTabsContainer"); c.innerHTML="";
-    let lvls=["A1","A2","B1","B2","C1","C2"]; Object.keys(DB).forEach(l=>{if(!lvls.includes(l))lvls.push(l)});
+    let lvls=["A1","A2","B1","B2","C1","C2"]; 
+    if(DB) Object.keys(DB).forEach(l=>{if(!lvls.includes(l))lvls.push(l)});
     lvls.forEach(l=>{
         let btn=document.createElement("div"); btn.className="lvl-btn "+(l===currentLevel?"active":""); btn.innerText=l;
         btn.onclick=()=>{currentLevel=l; viewIndex=PROGRESS[gameMode][l]||0; renderTabs(); renderContent();}; c.appendChild(btn);
@@ -292,22 +271,45 @@ function renderTabs() {
 }
 
 function renderContent() {
-    let sets=DB[currentLevel]||[]; let completed=PROGRESS[gameMode][currentLevel]||0;
-    if(sets.length===0) { document.getElementById("mainTitle").innerText="Set yok"; document.getElementById("btnStart").disabled=true; return; }
-    if(viewIndex<0) viewIndex=0; if(viewIndex>=sets.length) viewIndex=sets.length-1;
-    let set=sets[viewIndex]; let isLocked=viewIndex>completed; let isDone=viewIndex<completed;
+    let sets = DB ? DB[currentLevel] : [];
+    
+    if(!sets || sets.length === 0) { 
+        document.getElementById("mainTitle").innerText="Set yok"; 
+        document.getElementById("btnStart").disabled=true; 
+        document.getElementById("setLabel").innerText = "BOŞ";
+        return; 
+    }
+
+    // Index Güvenliği
+    if(viewIndex < 0) viewIndex = 0;
+    if(viewIndex >= sets.length) viewIndex = sets.length - 1;
+
+    let set = sets[viewIndex];
+    if(!set) { 
+        // Eğer index hatası varsa sıfırla
+        viewIndex = 0; set = sets[0]; 
+    }
+
+    let completed = PROGRESS[gameMode][currentLevel] || 0;
+    let isLocked = viewIndex > completed;
+    let isDone = viewIndex < completed;
+    
     document.getElementById("modeDisplay").innerText = (gameMode==="eng_to_tr")?"🇬🇧 > 🇹🇷":"🇹🇷 > 🇬🇧";
     document.getElementById("setLabel").innerText = `SET ${viewIndex+1} / ${sets.length}`;
     document.getElementById("mainTitle").innerText = set.title.replace(/SET \d+ [–-]/i, "").trim();
     document.getElementById("mainIcon").className = `fa-solid ${ICONS[(viewIndex+set.title.length)%ICONS.length]}`;
+    
     let btn=document.getElementById("btnStart");
     document.querySelector(".nav-prev").style.display=viewIndex===0?"none":"flex";
     document.querySelector(".nav-next").style.display=viewIndex===sets.length-1?"none":"flex";
+    
     if(isLocked) { btn.innerHTML=`KİLİTLİ <i class="fa-solid fa-lock"></i>`; btn.style.background="#bdc3c7"; btn.disabled=true; btn.style.boxShadow="none";}
     else if(isDone) { btn.innerHTML=`TEKRARLA <i class="fa-solid fa-rotate-left"></i>`; btn.style.background="#8e44ad"; btn.disabled=false; btn.style.boxShadow="0 10px 25px rgba(142, 68, 173, 0.4)";}
     else { btn.innerHTML=`BAŞLA <i class="fa-solid fa-play"></i>`; btn.style.background="var(--accent-grad)"; btn.disabled=false; btn.style.boxShadow="0 10px 25px rgba(17, 153, 142, 0.4)";}
-    document.getElementById("mistakesAlert").style.display=MISTAKES.length>0?"block":"none";
+    
+    document.getElementById("mistakesAlert").style.display=(MISTAKES && MISTAKES.length>0)?"block":"none";
 }
+
 function navCard(d) { let sets=DB[currentLevel]||[]; let next=viewIndex+d; if(next>=0&&next<sets.length){viewIndex=next; renderContent();} }
 function toggleGameMode() { gameMode=(gameMode==="eng_to_tr")?"tr_to_eng":"eng_to_tr"; viewIndex=PROGRESS[gameMode][currentLevel]||0; renderContent(); }
 
@@ -321,17 +323,30 @@ function startLoop() { currentQuestionIndex=0; score=0; show("gameScreen"); docu
 function loadQuestion() {
     if(currentQuestionIndex>=currentSetData.length) { finishSet(); return; }
     let q=currentSetData[currentQuestionIndex]; 
+    if(!q) { finishSet(); return; } // Hata koruması
+
     let qTxt = removeParentheses((gameMode==="eng_to_tr") ? q.eng : q.tr);
     let ans = removeParentheses((gameMode==="eng_to_tr") ? q.tr : q.eng);
+    
     let pool=isMistakeGame?MISTAKES:DB[currentLevel].flatMap(s=>s.items);
     if(pool.length<5) pool=Object.values(DB).flat().flatMap(s=>s.items);
     
-    document.getElementById("qText").innerText=qTxt; document.getElementById("scoreIndicator").innerText=score;
-    document.getElementById("feedbackMsg").innerHTML=""; document.getElementById("grammarBtn").style.display="none";
+    document.getElementById("qText").innerText=qTxt; 
+    document.getElementById("scoreIndicator").innerText=score;
+    document.getElementById("feedbackMsg").innerHTML=""; 
+    document.getElementById("grammarBtn").style.display="none";
     document.getElementById("progressBar").style.width=((currentQuestionIndex/currentSetData.length)*100)+"%";
     
-    let opts=[ans]; while(opts.length<4) { let r=pool[Math.floor(Math.random()*pool.length)]; let v=removeParentheses((gameMode==="eng_to_tr")?r.tr:r.eng); if(!opts.includes(v)&&v!==ans)opts.push(v); }
+    let opts=[ans]; 
+    let safety=0;
+    while(opts.length<4 && safety<50) { 
+        safety++;
+        let r=pool[Math.floor(Math.random()*pool.length)]; 
+        let v=removeParentheses((gameMode==="eng_to_tr")?r.tr:r.eng); 
+        if(!opts.includes(v)&&v!==ans) opts.push(v); 
+    }
     opts.sort(()=>Math.random()-0.5);
+    
     let box=document.getElementById("optionsBox"); box.innerHTML="";
     opts.forEach(o=>{let btn=document.createElement("button"); btn.className="opt-btn"; btn.innerText=o; btn.onclick=()=>check(o,ans,btn,q); box.appendChild(btn);});
     readQuestion();
@@ -340,6 +355,8 @@ function loadQuestion() {
 function check(sel, ans, btn, qObj) {
     let stat=(gameMode==="eng_to_tr")?STATS.eng_to_tr:STATS.tr_to_eng;
     document.querySelectorAll(".opt-btn").forEach(b=>b.disabled=true);
+    
+    // Güvenlik: Eğer type yoksa varsayılan ata
     let grammarId = qObj.type || ((currentQuestionIndex % 12) + 1);
 
     if(sel === ans) {
@@ -356,6 +373,7 @@ function check(sel, ans, btn, qObj) {
 
 function openGrammarModal(id) { let r=GRAMMAR_RULES[id]; if(r){document.getElementById("grammarTitle").innerText=r.title; document.getElementById("grammarBody").innerHTML=r.content; document.getElementById("grammarModal").style.display="flex";} }
 function closeGrammarModal() { document.getElementById("grammarModal").style.display="none"; currentQuestionIndex++; loadQuestion(); }
+function openCurrentGrammar() { let id = currentSetData[currentQuestionIndex].type || ((currentQuestionIndex%12)+1); openGrammarModal(id); }
 document.querySelector("#grammarModal button.btn-sm").onclick = closeGrammarModal;
 
 function finishSet() {
@@ -373,9 +391,16 @@ function retrySet() { if(isMistakeGame) startMistakeGame(); else startGame(curre
 function readQuestion() { let u=new SpeechSynthesisUtterance(document.getElementById("qText").innerText); u.lang=(gameMode==="eng_to_tr")?"en-US":"tr-TR"; speechSynthesis.speak(u); }
 
 /* =========================================
-   5. VERİ VE İSTATİSTİK
+   5. VERİ YÖNETİMİ & İSTATİSTİK
 ========================================= */
-function loadData() { let d=localStorage.getItem(KEYS.DB); if(d)DB=JSON.parse(d); let p=localStorage.getItem(KEYS.PROG); if(p)PROGRESS=JSON.parse(p); let s=localStorage.getItem(KEYS.STAT); if(s)STATS=JSON.parse(s); let m=localStorage.getItem(KEYS.MIS); if(m)MISTAKES=JSON.parse(m); }
+function loadData() { 
+    try {
+        let d=localStorage.getItem(KEYS.DB); if(d)DB=JSON.parse(d); 
+        let p=localStorage.getItem(KEYS.PROG); if(p)PROGRESS=JSON.parse(p); 
+        let s=localStorage.getItem(KEYS.STAT); if(s)STATS=JSON.parse(s); 
+        let m=localStorage.getItem(KEYS.MIS); if(m)MISTAKES=JSON.parse(m); 
+    } catch(e) { console.log("Veri okuma hatası", e); }
+}
 function saveData() { localStorage.setItem(KEYS.DB,JSON.stringify(DB)); localStorage.setItem(KEYS.PROG,JSON.stringify(PROGRESS)); localStorage.setItem(KEYS.STAT,JSON.stringify(STATS)); localStorage.setItem(KEYS.MIS,JSON.stringify(MISTAKES)); }
 
 function parseAndSaveData(mode) { let raw=document.getElementById("dataInput").value; if(!raw)return alert("Veri yok"); let lvl=document.getElementById("importLevelSelect").value;
@@ -392,13 +417,12 @@ function forceRecovery() { if(confirm("Eski verileri tara?")){let c=0; ["PM_PROH
 function resetProgressOnly() { if(confirm("İlerlemeyi sıfırla?")){PROGRESS={eng_to_tr:{}, tr_to_eng:{}}; STATS={eng_to_tr:{correct:0,wrong:0}, tr_to_eng:{correct:0,wrong:0}}; MISTAKES=[]; saveData(); location.reload();} }
 function resetEverything() { if(confirm("Her şeyi sil?")){localStorage.removeItem(KEYS.DB); localStorage.removeItem(KEYS.PROG); localStorage.removeItem(KEYS.STAT); localStorage.removeItem(KEYS.MIS); location.reload();} }
 
-/* --- İSTATİSTİK GÜNCELLEME (SEVİYE BAZLI) --- */
+/* --- İSTATİSTİK GÜNCELLEME --- */
 function showStatsScreen(){ 
     show("statsScreen"); 
     drawChart("chartET",STATS.eng_to_tr); 
     drawChart("chartTE",STATS.tr_to_eng);
     
-    // Level Progress Grid Doldur
     let html = "";
     ["A1","A2","B1","B2","C1","C2"].forEach(l => {
         let sets = DB[l] || [];
@@ -417,22 +441,17 @@ function showStatsScreen(){
             <div class="ls-bar-bg"><div class="ls-bar-fill" style="width:${pct}%"></div></div>
             <div class="ls-info">
                 <span>Tamamlanan: <b>${done}</b></span>
-                <span>Kalan: <b>${remaining}</b></span>
+                <span>Toplam: <b>${total}</b></span>
             </div>
         </div>`;
     });
     document.getElementById("levelProgressBox").innerHTML = html;
 
-    // API Verisini Oluştur
     let exportData = {db:DB, prog:PROGRESS, stat:STATS, mis:MISTAKES};
     document.getElementById("apiDataString").innerText = JSON.stringify(exportData);
 }
 
-function copyApiData() {
-    let txt = document.getElementById("apiDataString").innerText;
-    navigator.clipboard.writeText(txt).then(() => alert("Kopyalandı!"));
-}
-
+function copyApiData() { let txt = document.getElementById("apiDataString").innerText; navigator.clipboard.writeText(txt).then(() => alert("Kopyalandı!")); }
 function drawChart(id,s){ if(window[id+"_C"])window[id+"_C"].destroy(); window[id+"_C"]=new Chart(document.getElementById(id),{type:'doughnut',data:{labels:['D','Y'],datasets:[{data:[s.correct,s.wrong],backgroundColor:['#2ecc71','#e74c3c']}]}}); }
 
 function toggleEditListMode() { show("editListScreen"); let d=document.getElementById("editListContainer"); d.innerHTML=""; (DB[currentLevel]||[]).forEach((s,i)=>{
