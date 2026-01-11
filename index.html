@@ -795,8 +795,11 @@ body {
         <button onclick="saveData()" class="save-btn-large">💾 İÇERİĞİ KAYDET VE YAYINLA</button>
     </div>
 
-  </div>
+ </div>
 </div>
+
+<script src="data.js"></script>
+
 <script>
 /* --- ENGLISH PRO HUB MASTER SCRIPT (V35.1 STABLE & FIXED) --- */
 
@@ -851,27 +854,42 @@ let quizAnswers={};
 
 // --- GİRİŞ VE KAYIT SİSTEMİ ---
 function initSystem() {
-    // Veritabanını LocalStorage'dan çek
+    // 1. Veritabanını LocalStorage'dan çekmeye çalış
     const rawDB = localStorage.getItem('EnglishProMasterDB');
+    
+    // Veri dosyasından gelen içerik var mı kontrol et
+    let externalData = [];
+    if (typeof systemContent !== 'undefined') {
+        externalData = systemContent;
+    }
+
     if (rawDB) {
         masterDB = JSON.parse(rawDB);
+        
+        // Eğer Admin varsa ama içi boşsa veya eksikse, data.js verilerini yükle
+        if (masterDB['admin']) {
+            // Eğer adminin içeriği boşsa veya data.js'de veri varsa birleştir/güncelle
+            if (!masterDB['admin'].data.contentData || masterDB['admin'].data.contentData.length === 0) {
+                 masterDB['admin'].data.contentData = externalData;
+                 saveMasterDB();
+            }
+        }
     } else {
-        // İlk açılışsa Admin'i oluştur
+        // 2. İlk defa açılıyorsa (Veritabanı yoksa)
+        // Data.js içindeki 'systemContent' verisini başlangıç verisi yap
         masterDB = {
             'admin': {
                 pass: 'mkutlu2108',
-                data: JSON.parse(JSON.stringify(defaultUserData)) // Kopya oluştur
+                data: {
+                    contentData: externalData, // Data.js buraya yükleniyor!
+                    userStats: { booksRead:0, pagesTurned:0, quizzesTaken:0, wordsAdded:0, notesTaken:0, totalCorrect:0, totalWrong:0, dailyActivity: {} },
+                    userUnknownWords: [],
+                    userKnownVocabulary: [],
+                    userActivityLog: [],
+                    userFavorites: []
+                }
             }
         };
-        // Eski veriler varsa Admin'e aktar (Veri kaybını önlemek için)
-        if(localStorage.getItem('englishWorkbookData')) {
-            masterDB['admin'].data.contentData = JSON.parse(localStorage.getItem('englishWorkbookData') || '[]');
-            masterDB['admin'].data.userStats = JSON.parse(localStorage.getItem('userStats') || '{}');
-            masterDB['admin'].data.userUnknownWords = JSON.parse(localStorage.getItem('userUnknownWords') || '[]');
-            masterDB['admin'].data.userActivityLog = JSON.parse(localStorage.getItem('userActivityLog') || '[]');
-            masterDB['admin'].data.userFavorites = JSON.parse(localStorage.getItem('userFavorites') || '[]');
-            masterDB['admin'].data.userKnownVocabulary = JSON.parse(localStorage.getItem('userKnownVocabulary') || '[]');
-        }
         saveMasterDB();
     }
 }
