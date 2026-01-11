@@ -201,19 +201,19 @@ body {
     flex: 1; display: flex; position: relative; 
     overflow-y: auto; overflow-x: hidden;
     background: #f0f2f5; height: 100%; 
-    align-items: center; justify-content: center; /* Kartı tam ortala */
+    align-items: center; justify-content: center; 
     padding: 20px;
 }
 
 .single-page { 
     background: white;
-    width: 100%; max-width: 800px; /* Kart genişliği */
-    min-height: 500px; /* Minimum kart yüksekliği */
+    width: 100%; max-width: 800px; 
+    min-height: 500px; 
     height: auto;
     padding: 60px; 
     border-radius: 25px; 
     box-shadow: 0 20px 60px rgba(0,0,0,0.08); 
-    font-size: 1.4rem; /* Okuma fontu büyüdü */
+    font-size: 1.4rem; 
     line-height: 2.2; 
     color: var(--text-color); 
     text-align: left; 
@@ -223,8 +223,25 @@ body {
     transition: transform 0.3s ease;
 }
 
-/* Sağ sayfa tamamen gizli */
-#pageRight { display: none !important; }
+/* --- DÜZELTME: AKILLI GÖRÜNÜM YÖNETİMİ --- */
+/* Varsayılan: Sağ sayfa gizli (Tek Kart Modu) */
+#pageRight { display: none; }
+
+/* Özel Durum: Split Mod (Word Master Kurulumu) varsa ikisi de görünsün */
+.split-mode { 
+    align-items: stretch !important; 
+    gap: 20px; 
+}
+.split-mode #pageRight { 
+    display: flex !important; /* Sağ sayfayı zorla aç */
+}
+/* Yan yana dururken kenarlıklar */
+.split-mode .single-page {
+    width: 50%; /* Ekranı paylaşsınlar */
+    min-height: 400px;
+    padding: 30px;
+    font-size: 1rem;
+}
 
 /* Kelime Stilleri */
 .interactive-word { cursor: pointer; border-bottom: 2px solid rgba(41, 128, 185, 0.15); transition: all 0.2s; border-radius: 4px; padding: 0 3px;}
@@ -530,6 +547,16 @@ body {
     font-weight: bold;
     padding: 0 2px;
 }
+/* --- USER MANAGEMENT STYLES --- */
+.user-list-wrapper { margin-top: 30px; border-top: 2px dashed #dfe6e9; padding-top: 20px; }
+.user-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95rem; }
+.user-table th { text-align: left; padding: 12px; background: #f1f2f6; color: var(--primary); border-radius: 8px 8px 0 0; }
+.user-table td { padding: 12px; border-bottom: 1px solid #eee; color: #2d3436; vertical-align: middle; }
+.user-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+.badge-admin { background: #ffeaa7; color: #d35400; }
+.badge-user { background: #dfe6e9; color: #636e72; }
+.del-user-btn { padding: 5px 10px; background: #fab1a0; color: #c0392b; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+.del-user-btn:hover { background: #c0392b; color: white; }
 </style>
 </head>
 <div id="dashListModal" class="dash-list-modal">
@@ -538,6 +565,28 @@ body {
         <h3 id="dashListTitle" style="margin-top:0; color:var(--primary); border-bottom:2px solid var(--accent); padding-bottom:10px;">Liste</h3>
         <div id="dashListBody"></div>
     </div>
+</div>
+<div class="modal-overlay" id="userManagementModal">
+  <div class="modal" style="background:#f4f6f8;"> <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; background:white; padding:20px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.05);">
+        <div>
+            <h2 style="color:var(--primary); margin:0; font-weight:800;">👥 Kullanıcı Yönetim Merkezi</h2>
+            <div style="color:#7f8c8d; font-size:0.9rem;">Sisteme kayıtlı üyeleri inceleyin ve yönetin.</div>
+        </div>
+        <button onclick="document.getElementById('userManagementModal').style.display='none'" style="border:none; background:none; font-size:2rem; cursor:pointer; color:#95a5a6;">&times;</button>
+    </div>
+
+    <div id="userStatsHeader" style="display:flex; gap:20px; margin-bottom:20px;">
+        </div>
+
+    <div style="background:white; padding:30px; border-radius:20px; box-shadow:0 5px 20px rgba(0,0,0,0.05);">
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+            <input type="text" id="userSearch" placeholder="Kullanıcı ara..." onkeyup="renderUserList(this.value)" style="padding:10px; border:2px solid #eee; border-radius:10px; width:300px; outline:none;">
+            <button onclick="renderUserList()" style="padding:10px 20px; background:var(--accent); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">🔄 Yenile</button>
+        </div>
+        <div id="userListArea" style="max-height:500px; overflow-y:auto;"></div>
+    </div>
+
+  </div>
 </div>
 <body>
 <div id="loginOverlay" class="login-overlay">
@@ -576,13 +625,21 @@ body {
     <button class="nav-btn" onclick="openExternalGame('phrase-master.html', 'Phrase Master')">✨ Phrase Master</button>
     
    <div class="spacer"></div>
-    
-    <div id="adminSection">
-        <button class="nav-btn" onclick="exportData()" style="color:white; font-weight:bold;">💾 YEDEK AL</button>
-        <button class="nav-btn admin-btn" onclick="openAdmin()">⚙️ Data Manager</button>
+
+    <div style="height:1px; background:rgba(255,255,255,0.1); margin:10px 0; width:100%;"></div>
+
+<div id="adminSection">
+        <button class="nav-btn" onclick="openAdmin()" style="color:#f1c40f; font-weight:700; width:100%;">
+            ⚙️ Data Manager
+        </button>
+        <button class="nav-btn" onclick="openUserPanel()" style="color:#00cec9; font-weight:700; width:100%;">
+            👥 Kullanıcılar
+        </button>
     </div>
     
-    <button class="nav-btn" onclick="logoutUser()" style="color:#e74c3c; margin-top:10px; border-top:1px solid rgba(255,255,255,0.1);">🚪 Çıkış Yap</button>
+    <button class="nav-btn" onclick="logoutUser()" style="color:#ff7675; font-weight:700; width:100%;">
+        🚪 Çıkış Yap
+    </button>
   </div>
 <div class="workbook-area">
     <div id="libraryHeader" class="library-header">
@@ -713,6 +770,7 @@ body {
         
         <button onclick="saveData()" class="save-btn-large">💾 İÇERİĞİ KAYDET VE YAYINLA</button>
     </div>
+
   </div>
 </div>
 <script>
@@ -1457,85 +1515,89 @@ function openBook(i) {
     setTimeout(() => { renderSpread(); }, 50);
 }
 
+/* --- GÜNCELLENMİŞ RENDER VE SAYFALAMA SİSTEMİ --- */
 function renderSpread() {
-    if ('speechSynthesis' in window) speechSynthesis.cancel(); 
-    const pL=document.getElementById('pageLeft'); 
-    const pR=document.getElementById('pageRight'); 
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    const pL=document.getElementById('pageLeft');
+    const pR=document.getElementById('pageRight');
     pL.innerHTML=""; pR.innerHTML="";
     
-    // Tek Kart Modu: Sol Açık, Sağ Kapalı
     document.querySelector('.book-spread').classList.remove('split-mode');
     pL.style.display = "flex"; pL.style.width = "100%"; 
     pR.style.display = "none"; 
 
-    // Diğer Modlar
+    // Word Master & Flashcard
     if(currentCategory === 'wordmaster') { renderWordMasterGame(pL, pR); return; }
     if(currentCategory === 'unknowns_flashcard' || currentCategory === 'favorites_flashcard') { renderUnknownFlashcards(pL, pR); return; }
     if(currentCategory==='question'){ 
         pL.style.alignItems = "center"; pL.style.justifyContent = "center";
         renderQuizSingleMode(pL); return; 
     }
-    
-    // GRAMMAR
-    if(currentCategory==='grammar'){ 
+
+    // --- SAYFALAMA (GRAMER VE READING İÇİN ORTAK) ---
+    let pages = [];
+
+    // 1. GRAMER (Artık Sayfalanacak)
+    if(currentCategory === 'grammar') {
+        // Grameri de Reading gibi boyutuna göre bölüyoruz
+        pages = paginateText(currentBook.content, false); // False = interaktif kelime yok
+
+        // Sadece SON sayfaya Not Defteri ve Tamamla Butonunu ekle
+        let lastPageExtra = "";
+        
         let completeBtn = !currentBook.completed ? 
-            `<button onclick="markAsCompleted()" style="width:100%; margin-top:30px; padding:15px; background:#f1c40f; color:#fff; border:none; border-radius:15px; cursor:pointer; font-weight:bold;">✔ KONUYU TAMAMLA</button>` : 
-            `<div style="margin-top:30px; text-align:center; color:var(--success); font-weight:bold; border:2px solid var(--success); padding:10px; border-radius:12px;">✔ TAMAMLANDI</div>`;
+            `<button onclick="markAsCompleted()" style="width:100%; margin-top:15px; padding:15px; background:#f1c40f; color:#fff; border:none; border-radius:15px; cursor:pointer; font-weight:bold;">✔ KONUYU TAMAMLA</button>` : 
+            `<div style="margin-top:15px; text-align:center; color:#27ae60; font-weight:bold; border:1px solid #27ae60; padding:5px; border-radius:12px;">✔ TAMAMLANDI</div>`;
         
-        let contentHtml = `<div class="content-text" style="margin-bottom:30px;">${currentBook.content}</div>`;
-        let notebookHtml = `<div style="margin-top:30px; padding-top:20px; border-top:2px dashed #eee;"><h4 style="color:#95a5a6; margin:0 0 10px 0;">📝 Konu Notları</h4><div class="notebook-wrapper" style="height:300px; border:1px solid #eee; border-radius:10px; padding:10px;"><textarea id="t" class="notebook-paper" oninput="saveTopicNote(this.value)" placeholder="Bu konuyla ilgili notlarınızı buraya alın...">${currentBook.userNotes||""}</textarea></div></div>`;
-        pL.innerHTML = contentHtml + notebookHtml + completeBtn; 
-        applyStyleToElement(document.getElementById('t'));
-        document.querySelector('.nav-arrow.prev').style.visibility='hidden'; 
-        document.querySelector('.nav-arrow.next').style.visibility='hidden'; 
-        return; 
+        lastPageExtra = `<div style="margin-top:30px; padding-top:20px; border-top:2px dashed #eee;"><h4 style="color:#95a5a6; margin:0 0 10px 0;">📝 Konu Notları</h4><div class="notebook-wrapper" style="height:250px; border:1px solid #eee; border-radius:10px; padding:10px;"><textarea id="t" class="notebook-paper" oninput="saveTopicNote(this.value)" placeholder="Bu konuyla ilgili notlarınızı buraya alın...">${currentBook.userNotes||""}</textarea></div></div>${completeBtn}`;
+
+        // Son sayfayı güncelle (Mevcut içeriğe ekle)
+        if(pages.length > 0) {
+            pages[pages.length - 1] += lastPageExtra;
+        } else {
+            pages = [lastPageExtra];
+        }
     }
-
-    // READING (PARAGRAF KARTLARI)
-    let totalPages = 1;
-
-    if(currentCategory==='reading') {
-        totalPages = bookChunksEn.length;
-        if(totalPages === 0) totalPages = 1;
+    // 2. READING
+    else if(currentCategory === 'reading') {
+        // Eğer TR moduysa çeviri, değilse EN metni al
+        // Not: bookChunksEn/Tr paragraf moduydu, eğer kart modunda taşma oluyorsa paginateText daha güvenlidir.
+        // Ama kullanıcı paragraf modu istemişti, burada hibrit bir yapı kullanıyoruz:
+        // Önce paragraflara bölmeyi deneyelim.
         
-        // Sayfa Sınırı Kontrolü
-        if(pageIndex >= totalPages) pageIndex = totalPages - 1;
-        if(pageIndex < 0) pageIndex = 0;
-
-        // İçeriği Al (TR Modundaysa TR chunk, değilse EN chunk)
-        let rawContent = "";
-        if (isTrMode) {
-            // Eğer TR çevirisi o paragraf için varsa göster, yoksa uyarı ver
-            rawContent = (bookChunksTr[pageIndex]) ? bookChunksTr[pageIndex] : "<div style='color:#999; font-style:italic;'>Bu paragrafın çevirisi bulunamadı.</div>";
-            // TR modunda interaktiflik kapalı olsun veya sadece metin olsun
+        let sourceArr = isTrMode ? bookChunksTr : bookChunksEn;
+        if(sourceArr && sourceArr.length > 0) {
+             pages = sourceArr; // Paragraf paragraf
+             // Eğer interaktiflik isteniyorsa (EN modunda)
+             if(!isTrMode) {
+                 pages = pages.map(p => processInteractiveText(p));
+             }
         } else {
-            rawContent = bookChunksEn[pageIndex] || "<p>İçerik yok.</p>";
+             // Fallback (Paragraflanmamışsa)
+             let txt = isTrMode ? (currentBook.trText || "Çeviri yok.") : currentBook.enText;
+             pages = paginateText(txt, !isTrMode);
         }
-
-        // İnteraktif hale getir (Sadece İngilizce modunda veya her ikisinde de isteğe bağlı)
-        // Eğer TR modundaysak düz bas, EN modundaysak kelimeleri böl
-        if(isTrMode) {
-             pL.innerHTML = rawContent;
-        } else {
-             pL.innerHTML = processInteractiveText(rawContent);
-        }
-    } 
-    // VOCAB & OTHERS
+    }
+    // 3. DIĞERLERİ
     else {
-        let pages=[];
         if(currentCategory==='vocabulary') pages=paginateVocab(currentBook.words, false);
         else if(currentCategory==='unknowns' || currentCategory==='favorites') pages=paginateVocab(currentBook.words, true);
-        
-        if(pages.length === 0) pages = ["<p>İçerik yok.</p>"];
-        totalPages = pages.length;
-        
-        if(pageIndex >= totalPages) pageIndex = totalPages - 1;
-        if(pageIndex < 0) pageIndex = 0;
-        pL.innerHTML = pages[pageIndex] || "";
     }
 
-    // READING İÇİN SON KART (BİTİRME BUTONU)
-    if(currentCategory === 'reading' && pageIndex === totalPages - 1) {
+    // --- SAYFA GÖSTERİMİ ---
+    if(pages.length === 0) pages = ["<p>İçerik yok.</p>"];
+    if(pageIndex >= pages.length) pageIndex = pages.length - 1;
+    if(pageIndex < 0) pageIndex = 0;
+
+    pL.innerHTML = pages[pageIndex] || "";
+
+    // Gramer için not defteri stili ayarla
+    if(currentCategory === 'grammar' && document.getElementById('t')) {
+        applyStyleToElement(document.getElementById('t'));
+    }
+
+    // READING İÇİN SON SAYFA BUTONU
+    if(currentCategory === 'reading' && pageIndex === pages.length - 1) {
         let finishBtn = !currentBook.completed ? 
             `<button onclick="markAsCompleted()" style="width:100%; margin-top:30px; padding:15px; background:var(--success); color:white; border:none; border-radius:50px; cursor:pointer; font-weight:bold; font-size:1rem; box-shadow:0 5px 15px rgba(39, 174, 96, 0.3);">✅ OKUMAYI TAMAMLA</button>` : 
             `<div style="margin-top:30px; text-align:center; color:var(--success); font-weight:bold; border:2px solid var(--success); padding:10px; border-radius:12px;">🎉 OKUMA TAMAMLANDI</div>`;
@@ -1554,57 +1616,38 @@ function renderSpread() {
         pL.appendChild(div);
     }
     
-    updateNav(totalPages);
-}
-
-// METNİ İNTERAKTİF HALE GETİREN YARDIMCI
-function processInteractiveText(html) {
-    let tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
-    let paragraphs = tempDiv.querySelectorAll('p, li, h1, h2, h3, h4, div'); // Div de ekledik
-    
-    if(paragraphs.length === 0) return html; // Tag yoksa olduğu gibi dön
-
-    paragraphs.forEach(p => {
-        if(!p.innerText.trim()) return;
-        p.innerHTML = p.innerText.split(' ').map(w => {
-            let cl = w.replace(/[^a-zA-Z0-9'çÇğĞıİöÖşŞüÜ]/g, ''); 
-            if (cl.length <= 1) return w;
-            let m = getWordMeaning(cl); 
-            let savedClass = isUnknown(cl) ? 'saved' : '';
-            return `<span class="interactive-word ${savedClass}" data-meaning="${m || ''}">${w}</span>`;
-        }).join(' ');
-    });
-    return tempDiv.innerHTML;
+    updateNav(pages.length);
 }
 
 function turnPage(d){ 
-    let step = (d > 0) ? 1 : -1; 
+    let step = (d > 0) ? 1 : -1;
     let newIndex = pageIndex + step;
     if(newIndex < 0) newIndex = 0;
     pageIndex = newIndex;
-
-    if(step > 0) { 
-        trackStat('pagesTurned'); 
-        const today = new Date().toLocaleDateString('tr-TR');
-        if(!userStats.dailyActivity) userStats.dailyActivity = {};
-        if(!userStats.dailyActivity[today]) userStats.dailyActivity[today] = { pages: 0 };
-        userStats.dailyActivity[today].pages += 1;
-        localStorage.setItem('userStats', JSON.stringify(userStats));
-    }
+    if(step > 0) trackStat('pagesTurned');
     renderSpread(); 
 }
 
 function updateNav(len) { 
     const pNL = document.getElementById('pageNumL');
-    // Sayfa Göstergesi: Kart X / Toplam Y
-    if(pNL) pNL.innerText = (pageIndex + 1) + " / " + len; 
     
-    const prev = document.querySelector('.nav-arrow.prev');
-    const next = document.querySelector('.nav-arrow.next');
-    
-    if(prev) prev.style.visibility = (pageIndex <= 0) ? 'hidden' : 'visible'; 
-    if(next) next.style.visibility = (pageIndex >= len - 1) ? 'hidden' : 'visible'; 
+    // --- DÜZELTME: EĞER 1 SAYFAYSA NUMARAYI GİZLE ---
+    if(len <= 1) {
+        pNL.style.display = 'none';
+        document.querySelector('.nav-arrow.prev').style.display = 'none';
+        document.querySelector('.nav-arrow.next').style.display = 'none';
+    } else {
+        pNL.style.display = 'block';
+        pNL.innerText = (pageIndex + 1) + " / " + len; 
+        
+        const prev = document.querySelector('.nav-arrow.prev');
+        const next = document.querySelector('.nav-arrow.next');
+        prev.style.display = 'flex'; // Reading/Grammar için görünür yap (Geri getir)
+        next.style.display = 'flex';
+
+        if(prev) prev.style.visibility = (pageIndex <= 0) ? 'hidden' : 'visible'; 
+        if(next) next.style.visibility = (pageIndex >= len - 1) ? 'hidden' : 'visible'; 
+    }
 }
 function toggleLang(){ 
     isTrMode = !isTrMode; 
@@ -2314,11 +2357,8 @@ function applyStyleToElement(el) {
     el.style.lineHeight = lh + 'px';
     el.style.backgroundSize = `100% ${lh}px`;
 }
-
-let ttsAutoPlay = false; // Otomatik geçiş kilidi
-
-/* --- GELİŞMİŞ TTS MOTORU (SIRA TABANLI VURGULAMA) --- */
-let ttsWordIndex = 0; // Hangi kelimede olduğumuzu tutar
+/* --- KUSURSUZ TTS MOTORU (V35.3 FINAL FIX) --- */
+let ttsAutoPlay = false;
 
 function handleTTS(action) {
     if (!('speechSynthesis' in window)) return alert("Tarayıcınız seslendirmeyi desteklemiyor.");
@@ -2329,50 +2369,51 @@ function handleTTS(action) {
     if (action === 'restart') {
         speechSynthesis.cancel();
         ttsAutoPlay = true;
-        ttsWordIndex = 0;
 
-        // A. Metni Hazırla ve Temizle
-        // Buton metinlerini (Tamamla, Tekrar vb.) okumasın diye onları geçici olarak gizle veya temizle
-        let cleanText = container.innerText
-            .replace(/✔ KONUYU TAMAMLA|✅ OKUMAYI TAMAMLA|🔄 Tekrar Okudum|🧠 İLGİLİ TESTİ|↺ İLGİLİ TESTİ/gi, "")
-            .trim();
-            
-        if (!cleanText) return;
-
-        // B. Görsel Vurgu İçin Kelimeleri İşaretle (Span içine al)
-        // Mevcut HTML'i bozmadan, sadece interactive-word olanları sıraya diz
+        // A. Kelimeleri Topla (DOM'dan)
         const wordSpans = Array.from(container.querySelectorAll('.interactive-word'));
         
-        // Eğer sayfada hiç interactive-word yoksa (örn: düz metin), önce onları oluşturmamız gerekir.
-        // Ancak paginateText fonksiyonun zaten her kelimeyi span yapıyor, o yüzden wordSpans doludur.
+        if (wordSpans.length === 0) {
+            // Eğer span yoksa (Düz metin geldiyse), metni direkt oku ama vurgulama yapma
+            let rawText = container.innerText.replace(/✔ KONUYU TAMAMLA|✅ OKUMAYI TAMAMLA|🔄 Tekrar Okudum|🧠 İLGİLİ TESTİ|↺ İLGİLİ TESTİ/gi, "").trim();
+            if(!rawText) return;
+            ttsObj = new SpeechSynthesisUtterance(rawText);
+        } else {
+            // Spanlardan temiz metin oluştur (Böylece okuma ve vurgu senkronize olur)
+            let textToRead = wordSpans.map(span => span.innerText).join(" "); // Boşlukla birleştir
+            ttsObj = new SpeechSynthesisUtterance(textToRead);
+        }
 
-        // C. Okumayı Başlat
-        ttsObj = new SpeechSynthesisUtterance(cleanText);
         ttsObj.lang = isTrMode ? 'tr-TR' : 'en-US';
         ttsObj.rate = parseFloat(document.getElementById('ttsSpeed').value) || 0.9;
 
-        // D. Vurgulama Mantığı (Sıra Takibi)
-        // Her 'word' olayında bir sonraki span'a geç
+        // B. Vurgulama Mantığı (Kelime Kelime)
         let currentSpanIndex = 0;
 
         ttsObj.onboundary = function(event) {
             if (event.name === 'word') {
-                // Tüm vurguları temizle
+                // Temizlik
                 const active = container.querySelector('.highlight-word');
-                if (active) active.classList.remove('highlight-word');
+                if (active) {
+                    active.classList.remove('highlight-word');
+                    active.style.backgroundColor = ""; 
+                    active.style.color = "";
+                }
 
-                // Sıradaki span'ı bul ve boya
+                // Sıradaki kelimeyi boya
                 if (currentSpanIndex < wordSpans.length) {
                     const span = wordSpans[currentSpanIndex];
+                    
+                    // CSS Class ile değil, doğrudan stil ile boya (Garanti olsun)
                     span.classList.add('highlight-word');
+                    span.style.backgroundColor = "#f1c40f"; 
+                    span.style.color = "#000";
+                    span.style.borderRadius = "3px";
+                    span.style.padding = "0 2px";
                     
-                    // İsteğe bağlı: Okunan kelimeye odaklan (Kaydır)
+                    // Otomatik Kaydırma (Okunan yere git)
                     // span.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
-                    
-                    // Basit kelime eşleştirme kontrolü (Kaymayı önlemek için)
-                    // Okunan metindeki kelime uzunluğu ile span içeriği uyumlu mu?
-                    // Eğer çok uyumsuzsa (örn: noktalama yüzünden), indexi atlatmayabiliriz ama
-                    // en basit yöntem her boundary'de 1 ilerlemektir.
+
                     currentSpanIndex++;
                 }
             }
@@ -2380,12 +2421,23 @@ function handleTTS(action) {
 
         ttsObj.onend = function() {
             // Temizlik
-            const active = container.querySelector('.highlight-word');
-            if (active) active.classList.remove('highlight-word');
+            wordSpans.forEach(span => {
+                span.classList.remove('highlight-word');
+                span.style.backgroundColor = ""; // Stili sıfırla
+                span.style.color = "";
+            });
 
             // Otomatik Sayfa Çevirme
             if(ttsAutoPlay) {
-                let totalPages = bookChunksEn.length || 1;
+                let totalPages = 1;
+                // Sayfa sayısını doğru modülden al
+                if(currentCategory === 'reading') totalPages = Math.max(1, isTrMode ? bookChunksTr.length : bookChunksEn.length);
+                else {
+                     // Diğer kategorilerde (Vocab) sayfa sayısını hesapla
+                     const pNL = document.getElementById('pageNumL');
+                     if(pNL && pNL.innerText.includes('/')) totalPages = parseInt(pNL.innerText.split('/')[1]);
+                }
+
                 if (currentCategory === 'reading' && pageIndex < totalPages - 1) {
                     turnPage(1);
                     setTimeout(() => handleTTS('restart'), 700);
@@ -2426,6 +2478,98 @@ function getFormattedTime(seconds) { const m = Math.floor(seconds / 60); const s
 function openAdmin() {
     document.getElementById('adminModal').style.display = 'flex';
     document.getElementById('bulkInput').value = ""; // Temiz aç
+}
+/* --- USER MANAGEMENT SYSTEM (NEW PAGE) --- */
+
+// 1. Data Manager (Sadece Veri Yükleme)
+function openAdmin() {
+    document.getElementById('adminModal').style.display = 'flex';
+    document.getElementById('bulkInput').value = ""; 
+}
+
+// 2. Kullanıcılar Sayfasını Aç
+function openUserPanel() {
+    document.getElementById('userManagementModal').style.display = 'flex';
+    renderUserList();
+}
+
+// 3. Listeyi Oluştur (Arama ve İstatistik Dahil)
+function renderUserList(filter = "") {
+    const container = document.getElementById('userListArea');
+    const statsHeader = document.getElementById('userStatsHeader');
+    
+    if(!masterDB) { container.innerHTML = "Veritabanı hatası."; return; }
+
+    let totalUsers = 0;
+    let totalReads = 0;
+    let tableHtml = `
+    <table class="user-table" style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr style="background:#f8f9fa; text-align:left;">
+                <th style="padding:15px; border-radius:10px 0 0 10px;">Kullanıcı</th>
+                <th style="padding:15px;">Durum</th>
+                <th style="padding:15px;">Toplam Puan</th>
+                <th style="padding:15px;">İlerleme</th>
+                <th style="padding:15px; border-radius:0 10px 10px 0;">İşlem</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+    for (let username in masterDB) {
+        // Arama Filtresi
+        if(filter && !username.toLowerCase().includes(filter.toLowerCase())) continue;
+
+        totalUsers++;
+        let uData = masterDB[username].data;
+        let isMe = (username === currentUser);
+        let isAdmin = (username === 'admin');
+        
+        // İstatistikler
+        let score = 0;
+        if(uData.userActivityLog) uData.userActivityLog.forEach(l => { score += (Number(l.points) || 0); });
+        
+        let books = (uData.userStats && uData.userStats.booksRead) ? uData.userStats.booksRead : 0;
+        if(books > 0) totalReads += books;
+
+        let badge = isAdmin ? '<span style="background:#ffeaa7; color:#d35400; padding:3px 8px; border-radius:10px; font-size:0.8rem; font-weight:bold;">Admin</span>' : '<span style="background:#dfe6e9; color:#636e72; padding:3px 8px; border-radius:10px; font-size:0.8rem;">Üye</span>';
+        
+        // Admin kendini silemez, diğerlerini silebilir
+        let delBtn = isAdmin ? '' : `<button onclick="deleteUser('${username}')" style="background:#fab1a0; color:#c0392b; border:none; padding:5px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">Sil</button>`;
+
+        tableHtml += `
+            <tr style="border-bottom:1px solid #f1f2f6; ${isMe ? 'background:#f0fdf4;' : ''}">
+                <td style="padding:15px;"><strong>${username}</strong> ${isMe ? '(Sen)' : ''}</td>
+                <td style="padding:15px;">${badge}</td>
+                <td style="padding:15px; color:#27ae60; font-weight:bold;">⭐ ${score}</td>
+                <td style="padding:15px; color:#2980b9;">📚 ${books} Kitap</td>
+                <td style="padding:15px;">${delBtn}</td>
+            </tr>
+        `;
+    }
+    tableHtml += `</tbody></table>`;
+    container.innerHTML = tableHtml;
+
+    // Üst Bilgi Kartlarını Güncelle
+    statsHeader.innerHTML = `
+        <div style="flex:1; background:#2980b9; color:white; padding:20px; border-radius:15px; text-align:center;">
+            <div style="font-size:2rem; font-weight:800;">${totalUsers}</div>
+            <div style="font-size:0.9rem; opacity:0.8;">Toplam Kullanıcı</div>
+        </div>
+        <div style="flex:1; background:#27ae60; color:white; padding:20px; border-radius:15px; text-align:center;">
+            <div style="font-size:2rem; font-weight:800;">${totalReads}</div>
+            <div style="font-size:0.9rem; opacity:0.8;">Toplam Okunan Kitap</div>
+        </div>
+    `;
+}
+
+function deleteUser(username) {
+    if(confirm(`UYARI: "${username}" kullanıcısı ve tüm verileri silinecek!\n\nBu işlem geri alınamaz. Emin misin?`)) {
+        delete masterDB[username];
+        saveMasterDB();
+        showToast(`${username} silindi.`);
+        renderUserList(); // Listeyi yenile
+    }
 }
 </script>
 </body>
