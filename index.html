@@ -899,15 +899,17 @@ function handleLogin() {
     const p = document.getElementById('loginPass').value.trim();
     const msg = document.getElementById('loginMsg');
 
-    if (!masterDB[u]) {
-        msg.innerText = "Kullanıcı bulunamadı!"; msg.style.color = "red"; return;
-    }
-    if (masterDB[u].pass !== p) {
-        msg.innerText = "Hatalı şifre!"; msg.style.color = "red"; return;
+    // Otomatik giriş kontrolü (Şifresiz geçiş)
+    if (!p && localStorage.getItem('lastSessionUser') === u && masterDB[u]) {
+        // Oturum geçerli, şifre sormadan devam et
+    } else {
+        if (!masterDB[u]) { msg.innerText = "Kullanıcı bulunamadı!"; msg.style.color = "red"; return; }
+        if (masterDB[u].pass !== p) { msg.innerText = "Hatalı şifre!"; msg.style.color = "red"; return; }
     }
 
     // Giriş Başarılı
     currentUser = u;
+    localStorage.setItem('lastSessionUser', u); // Oturumu kaydet
     loadUserData(u);
     document.getElementById('loginOverlay').style.display = 'none';
     
@@ -924,32 +926,9 @@ function handleLogin() {
     renderLibrary();
 }
 
-function handleRegister() {
-    const u = document.getElementById('loginUser').value.trim();
-    const p = document.getElementById('loginPass').value.trim();
-    const msg = document.getElementById('loginMsg');
-
-    if (!u || !p) { msg.innerText = "Alanları doldurun!"; msg.style.color = "orange"; return; }
-    if (masterDB[u]) { msg.innerText = "Bu kullanıcı zaten var!"; msg.style.color = "red"; return; }
-
-    // Yeni kullanıcı oluştur
-    masterDB[u] = {
-        pass: p,
-        data: JSON.parse(JSON.stringify(defaultUserData)) // Boş veri şablonu
-    };
-    
-    // Admin içeriğini (Dersleri) yeni kullanıcıya kopyala (İstersen bunu kapatabilirsin)
-    // Bu sayede yeni gelenler boş ekran görmez, adminin eklediği dersleri görür.
-    if(masterDB['admin']) {
-        masterDB[u].data.contentData = JSON.parse(JSON.stringify(masterDB['admin'].data.contentData));
-    }
-
-    saveMasterDB(); // KESİN KAYIT!
-    msg.innerText = "Kayıt başarılı! Giriş yapabilirsiniz."; msg.style.color = "green";
-}
-
 function logoutUser() {
-    location.reload(); // En temiz çıkış yöntemi sayfayı yenilemektir
+    localStorage.removeItem('lastSessionUser'); // Oturumu sil
+    location.reload(); 
 }
 
 function loadUserData(user) {
@@ -997,7 +976,13 @@ function logActivity(type, title, detail, durationSeconds = 0, points = 0) {
 window.onload = function() { 
     initSystem(); // Kullanıcı sistemini hazırla
     setupVoice(); 
-    // Not: Uygulama akışı handleLogin() fonksiyonunda başlayacak
+    
+    // Kayıtlı kullanıcı varsa otomatik giriş yap
+    const savedUser = localStorage.getItem('lastSessionUser');
+    if (savedUser && masterDB[savedUser]) {
+        document.getElementById('loginUser').value = savedUser;
+        handleLogin(); 
+    }
 };
 
 /* --- METİN PARÇALAMA & İŞLEME SİSTEMİ (V35.1 RESTORED) --- */
@@ -1570,6 +1555,24 @@ function openBook(i) {
     currentQuizTime = 0; activeReadingSeconds = 0; pageIndex = 0;
     
     if(currentCategory !== 'unknowns') trackStat('booksRead');
+
+    // --- DÜZELTME BAŞLANGICI: AYRAÇ TEMİZLEME VE DİL AYIRMA ---
+    // Veri kaynağını belirle (enText veya content olabilir)
+    let rawSource = i.enText || i.content || "";
+    
+    // Eğer metinde ayraç varsa, hem ayracı sil hem de dilleri ayır
+    if (rawSource.includes('[Türkçe Çeviri]') || rawSource.includes('---')) {
+        let separator = rawSource.includes('[Türkçe Çeviri]') ? '[Türkçe Çeviri]' : '---';
+        let parts = rawSource.split(separator); // Metni ayraçtan ikiye böl
+        
+        i.enText = parts[0].trim(); // İlk kısım İngilizce
+        i.trText = parts[1] ? parts[1].trim() : ""; // İkinci kısım Türkçe
+        
+        // Eğer 'content' kullanılıyorsa onu da temizle ki ekranda ayraç görünmesin
+        i.content = i.enText; 
+    }
+    // --- DÜZELTME BİTİŞİ ---
+
     currentBook=i; 
     isTrMode=false; 
     quizAnswers={};
@@ -1595,12 +1598,10 @@ function openBook(i) {
         document.getElementById('liveStats').style.display='flex'; 
         
         // --- PARAGRAF PARÇALAMA SİSTEMİ (SPLITTER) ---
-        // Metni HTML etiketlerine (<p>, <div>, <br>) veya çift satır sonlarına göre böler
         const splitRegex = /<\/p>|<\/div>|<br\s*\/?>\s*<br\s*\/?>|\n\s*\n/i;
         
-        // İngilizceyi Parçala
+        // İngilizceyi Parçala (Artık içinde --- yok)
         bookChunksEn = (i.enText || "").split(splitRegex).filter(t => t.trim().length > 0).map(t => {
-            // Eğer düz metin geldiyse ve <p> yoksa, temizle ve <p> içine al (yoksa zaten html tagleri vardır)
             return t.includes('<') ? t : `<p>${t}</p>`;
         });
 
@@ -1638,7 +1639,6 @@ function openBook(i) {
     
     setTimeout(() => { renderSpread(); }, 50);
 }
-
 /* --- GÜNCELLENMİŞ RENDER VE SAYFALAMA SİSTEMİ --- */
 function renderSpread() {
     if ('speechSynthesis' in window) speechSynthesis.cancel();
@@ -2024,11 +2024,34 @@ function paginateVocab(w, isListMode = false){
 }
 
 function switchCategory(cat) {
-    currentCategory=cat; currentLevelFolder = null; closeBook();
-    document.querySelectorAll('.nav-btn').forEach(b=>{ b.classList.remove('active'); if(b.getAttribute('onclick').includes(cat)) b.classList.add('active'); });
+    currentCategory=cat; 
+    currentLevelFolder = null; 
+    closeBook();
     
-    if(cat === 'unknowns') { openBook({ title: "Bilmediğim Kelimeler", words: userUnknownWords }); document.getElementById('libraryGrid').style.display='none'; return; }
-    if(cat === 'favorites') { openBook({ title: "⭐ Favorilerim", words: userFavorites }); document.getElementById('libraryGrid').style.display='none'; return; }
+    document.querySelectorAll('.nav-btn').forEach(b=>{ 
+        b.classList.remove('active'); 
+        if(b.getAttribute('onclick').includes(cat)) b.classList.add('active'); 
+    });
+    
+    // --- LİSTEYİ ATLA, DİREKT KARTA GEÇ ---
+    if(cat === 'unknowns') { 
+        document.getElementById('libraryGrid').style.display='none';
+        document.getElementById('libraryHeader').style.display='none';
+        document.getElementById('openBookView').style.display='flex';
+        document.getElementById('bookHeaderTitle').innerText = "🚫 Unknown Words (Kart Modu)";
+        startFlashcardMode(); 
+        return; 
+    }
+    
+    if(cat === 'favorites') { 
+        document.getElementById('libraryGrid').style.display='none';
+        document.getElementById('libraryHeader').style.display='none';
+        document.getElementById('openBookView').style.display='flex';
+        document.getElementById('bookHeaderTitle').innerText = "⭐ Favorites (Kart Modu)";
+        startFlashcardMode(); 
+        return; 
+    }
+    // -------------------------------------
     
     const s=document.getElementById('mainSearch'); s.value="";
     s.placeholder = (cat==='vocabulary') ? "Kelime Ara..." : "Kütüphanede Ara...";
@@ -2379,19 +2402,37 @@ function importData(input) {
     const file = input.files[0]; if(!file) return;
     const reader = new FileReader();
     reader.onload = function(e) {
-        try { const json = JSON.parse(e.target.result);
-            if(json.data) localStorage.setItem('englishWorkbookData', json.data);
-            if(json.stats) localStorage.setItem('userStats', json.stats);
-            if(json.notes) localStorage.setItem('myGeneralNotes', json.notes);
-            if(json.unknowns) localStorage.setItem('userUnknownWords', json.unknowns);
-            if(json.knowns) localStorage.setItem('userKnownVocabulary', json.knowns);
-            if(json.favorites) localStorage.setItem('userFavorites', json.favorites);
-            if(json.grammarStats) localStorage.setItem('grammarGameStats', json.grammarStats);
-            if(json.phraseStats) localStorage.setItem('phraseMasterStats', json.phraseStats);
-            if(json.activityLog) localStorage.setItem('userActivityLog', json.activityLog);
-            showToast("Yüklendi!"); setTimeout(() => location.reload(), 1500);
-        } catch(err) { showToast("Hata!", true); }
-    }; reader.readAsText(file);
+        try {
+            const json = JSON.parse(e.target.result);
+            
+            // Eğer giriş yapmış bir kullanıcı yoksa işlem yapma
+            if(!currentUser || !masterDB[currentUser]) {
+                alert("Lütfen önce giriş yapın.");
+                return;
+            }
+
+            // Verileri Aktif Kullanıcıya İşle
+            const d = masterDB[currentUser].data;
+            
+            if(json.data) d.contentData = JSON.parse(json.data);
+            if(json.stats) d.userStats = JSON.parse(json.stats);
+            if(json.unknowns) d.userUnknownWords = JSON.parse(json.unknowns);
+            if(json.knowns) d.userKnownVocabulary = JSON.parse(json.knowns);
+            if(json.favorites) d.userFavorites = JSON.parse(json.favorites);
+            if(json.activityLog) d.userActivityLog = JSON.parse(json.activityLog);
+
+            saveMasterDB(); // Veritabanını güncelle
+            showToast("Veriler Başarıyla Yüklendi!");
+            
+            // Sayfayı yenile (Otomatik giriş sayesinde şifre sormayacak)
+            setTimeout(() => location.reload(), 1000);
+            
+        } catch(err) { 
+            console.error(err);
+            showToast("Dosya formatı hatalı!", true); 
+        }
+    }; 
+    reader.readAsText(file);
 }
 function resetProgress() {
     if(!confirm("⚠️ DİKKAT! Tüm ilerleme SIFIRLANACAK.\n\nEmin misin?")) return;
