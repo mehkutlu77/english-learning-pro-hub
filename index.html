@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ENGLISH LEARNING PRO HUB - V35.0 (STABLE SINGLE FILE)</title>
+<title>ENGLISH LEARNING PRO HUB - V35.1 (STABLE & FIXED)</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* --- STYLE SYSTEM V31.0 ULTIMATE --- */
+/* --- STYLE SYSTEM V35.1 FIXED --- */
 :root {
     --bg-body: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     --primary: #2c3e50; 
@@ -155,13 +155,14 @@ body {
 .section-title { font-size:1.3rem; color:var(--primary); font-weight: 700; margin:30px 0 15px 0; border-left: 5px solid var(--accent); padding-left: 15px; }
 .analytics-grid-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
 
-/* WORD MASTER */
+/* WORD MASTER (DÜZELTİLDİ: EŞİT YÜKSEKLİK VE KART YAPISI) */
 .wm-setup-title { text-align:center; color:var(--primary); margin-bottom:25px; font-weight:700; font-size: 1.3rem; position: relative; display: inline-block; left: 50%; transform: translateX(-50%); border-bottom: 3px solid var(--accent); padding-bottom: 10px;}
-.wm-type-btn { display:flex; width:100%; padding:25px; margin-bottom:15px; background:#fff; border:2px solid #f1f2f6; border-radius:20px; font-family:var(--font-main); font-weight:700; font-size:1.2rem; color:var(--text-color); cursor:pointer; transition:0.2s; align-items:center; gap:15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
-.wm-type-btn:hover { border-color:var(--accent); background:#f8f9fa; transform: translateX(5px); }
+.wm-setup-card { background:white; border-radius:20px; padding:30px; border:1px solid #f1f2f6; box-shadow:0 10px 30px rgba(0,0,0,0.05); height:100%; display:flex; flex-direction:column; justify-content:flex-start; }
+.wm-type-btn { display:flex; width:100%; padding:20px; margin-bottom:15px; background:#f8f9fa; border:2px solid #dfe6e9; border-radius:15px; font-family:var(--font-main); font-weight:700; font-size:1.1rem; color:var(--text-color); cursor:pointer; transition:0.2s; align-items:center; gap:15px; }
+.wm-type-btn:hover { border-color:var(--accent); background:white; transform: translateX(5px); box-shadow:0 5px 15px rgba(0,0,0,0.05); }
 .wm-type-btn.selected { border-color:var(--accent); background:var(--accent); color:#fff; box-shadow: 0 10px 20px rgba(41, 128, 185, 0.3); }
-.wm-level-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; }
-.wm-level-btn { padding:30px; border:none; background:#f1f2f6; border-radius:20px; font-family:var(--font-main); font-weight:800; font-size:1.4rem; color:var(--primary); cursor:pointer; transition:0.2s; }
+.wm-level-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:15px; } /* 3'lü yerine 2'li daha dengeli */
+.wm-level-btn { padding:20px; border:none; background:#f1f2f6; border-radius:15px; font-family:var(--font-main); font-weight:800; font-size:1.2rem; color:var(--primary); cursor:pointer; transition:0.2s; }
 .wm-level-btn:hover { background:var(--accent); color:white; transform:scale(1.05); box-shadow: 0 10px 20px rgba(41, 128, 185, 0.3); }
 .wm-mode-toggle { display:flex; gap:10px; margin-bottom:30px; background:#f1f2f6; padding:8px; border-radius:50px; }
 .wm-mode-opt { flex:1; text-align:center; padding:12px; border-radius:50px; cursor:pointer; font-weight:700; transition:0.2s; color: #95a5a6; }
@@ -215,32 +216,55 @@ body {
     box-shadow: 0 20px 60px rgba(0,0,0,0.08); 
     font-size: 1.4rem; 
     line-height: 2.2; 
-    color: var(--text-color); 
+    color: #2d3436 !important; /* Metin rengini koyu griye zorla */
     text-align: left; 
-    display: flex; flex-direction: column; justify-content: center;
+    display: flex; flex-direction: column; justify-content: flex-start;
     position: relative;
     border: 1px solid #fff;
     transition: transform 0.3s ease;
+    z-index: 10; /* Katman sırasını öne al */
 }
 
-/* --- DÜZELTME: AKILLI GÖRÜNÜM YÖNETİMİ --- */
-/* Varsayılan: Sağ sayfa gizli (Tek Kart Modu) */
+/* --- DÜZELTME: AKILLI GÖRÜNÜM YÖNETİMİ V2 --- */
 #pageRight { display: none; }
 
-/* Özel Durum: Split Mod (Word Master Kurulumu) varsa ikisi de görünsün */
+/* Word Master Kurulum Modu (Çift Sütun DÜZELTME) */
 .split-mode { 
-    align-items: stretch !important; 
-    gap: 20px; 
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important; /* Yükseklikleri eşitle */
+    justify-content: center; /* Ortala */
+    gap: 30px; 
+    width: 100%;
+    padding: 20px;
+    max-width: 1200px; /* Çok geniş ekranda dağılmasın */
+    margin: 0 auto;
 }
+
+.split-mode #pageLeft, 
 .split-mode #pageRight { 
-    display: flex !important; /* Sağ sayfayı zorla aç */
+    display: flex !important;
+    flex: 1; 
+    width: 45%; 
+    background: transparent !important; /* Arka planı şeffaf yap, içindeki kart görünecek */
+    box-shadow: none !important;
+    padding: 0 !important; /* İç dolguyu sıfırla */
+    min-height: 500px; 
+    margin: 0;
+    flex-direction: column;
 }
-/* Yan yana dururken kenarlıklar */
-.split-mode .single-page {
-    width: 50%; /* Ekranı paylaşsınlar */
-    min-height: 400px;
-    padding: 30px;
-    font-size: 1rem;
+
+/* Mobilde Alt Alta */
+@media (max-width: 900px) {
+    .split-mode { flex-direction: column !important; height: auto; }
+    .split-mode #pageLeft, .split-mode #pageRight { width: 100%; margin-bottom: 20px; min-height: auto; }
+}
+
+/* Metinlerin görünürlüğünü garantiye al */
+.content-text p, .content-text div, .single-page p {
+    color: #2d3436 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 /* Kelime Stilleri */
@@ -774,7 +798,7 @@ body {
   </div>
 </div>
 <script>
-/* --- ENGLISH PRO HUB MASTER SCRIPT (V35.0 STABLE) --- */
+/* --- ENGLISH PRO HUB MASTER SCRIPT (V35.1 STABLE & FIXED) --- */
 
 /* 1. USER & DATABASE SYSTEM (MULTI-USER) */
 let currentUser = null; // Aktif kullanıcı
@@ -902,7 +926,7 @@ function handleRegister() {
         masterDB[u].data.contentData = JSON.parse(JSON.stringify(masterDB['admin'].data.contentData));
     }
 
-    saveMasterDB();
+    saveMasterDB(); // KESİN KAYIT!
     msg.innerText = "Kayıt başarılı! Giriş yapabilirsiniz."; msg.style.color = "green";
 }
 
@@ -957,6 +981,81 @@ window.onload = function() {
     setupVoice(); 
     // Not: Uygulama akışı handleLogin() fonksiyonunda başlayacak
 };
+
+/* --- METİN PARÇALAMA & İŞLEME SİSTEMİ (V35.1 RESTORED) --- */
+function paginateText(html, makeInteractive) {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    // Eğer metin çok kısaysa bölmeye gerek yok
+    if(tempDiv.innerText.length < 500 && !tempDiv.querySelector('img')) {
+        return [makeInteractive ? processInteractiveText(html) : html];
+    }
+
+    const pages = [];
+    let currentContent = '';
+    let currentLength = 0;
+    const CHAR_LIMIT = 500; // Karakter sınırı
+
+    // Child Node'ları gezerek böl
+    Array.from(tempDiv.childNodes).forEach(node => {
+        let nodeHTML = node.outerHTML || node.nodeValue || "";
+        let nodeText = node.textContent || "";
+        
+        // Eğer node boşluktan ibaretse atla
+        if(!nodeHTML.trim()) return;
+
+        // Eğer mevcut sayfa dolduysa
+        if (currentLength + nodeText.length > CHAR_LIMIT) {
+            if (currentContent) {
+                pages.push(makeInteractive ? processInteractiveText(currentContent) : currentContent);
+            }
+            currentContent = nodeHTML;
+            currentLength = nodeText.length;
+        } else {
+            currentContent += nodeHTML;
+            currentLength += nodeText.length;
+        }
+    });
+
+    if (currentContent) {
+        pages.push(makeInteractive ? processInteractiveText(currentContent) : currentContent);
+    }
+    
+    return pages.length > 0 ? pages : [makeInteractive ? processInteractiveText(html) : html];
+}
+
+function processInteractiveText(html) {
+    // Sadece metin düğümlerini bulup kelimelere ayırır, HTML taglerine dokunmaz
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+
+    function walkAndReplace(node) {
+        if (node.nodeType === 3) { // Text Node
+            const text = node.nodeValue;
+            // Kelimeleri bul (sadece harfler)
+            const newHTML = text.replace(/([a-zA-ZçÇğĞıİöÖşŞüÜ']+)/g, (match) => {
+                let lower = match.toLowerCase();
+                let savedClass = userUnknownWords.some(u => u.en.toLowerCase() === lower) ? ' saved' : '';
+                let meaning = getWordMeaning(lower) || '';
+                return `<span class="interactive-word${savedClass}" data-meaning="${meaning}">${match}</span>`;
+            });
+            
+            // Eğer değişiklik olduysa span ile değiştir
+            if(newHTML !== text) {
+                const wrapper = document.createElement('span');
+                wrapper.innerHTML = newHTML;
+                node.parentNode.replaceChild(wrapper, node);
+            }
+        } else if (node.nodeType === 1 && !node.classList.contains('interactive-word')) {
+            // Element Node, içine gir (recursion)
+            Array.from(node.childNodes).forEach(walkAndReplace);
+        }
+    }
+
+    walkAndReplace(tempDiv);
+    return tempDiv.innerHTML;
+}
 
 // TOOLTIP EVENT LISTENER
 document.addEventListener('mouseover', function(e) {
@@ -1280,7 +1379,7 @@ function closeExternalApp() {
     if(typeof externalTimerInterval !== 'undefined') clearInterval(externalTimerInterval);
 
     const view = document.getElementById('externalAppView');
-    const frame = document.getElementById('appFrame');
+    const frame = document.getElementById('appFrame'); 
     
     if(view) view.style.display = 'none'; 
     if(frame) frame.src = ""; // Iframe'i boşaltarak yükü azalt
@@ -1289,7 +1388,7 @@ function closeExternalApp() {
     switchCategory('reading'); 
     renderLibrary(); 
 }
-/* 5. WORD MASTER */
+/* 5. WORD MASTER (DÜZELTİLDİ: BOYUT AYARI) */
 function openWordMasterApp() {
     closeBook();
     currentCategory = 'wordmaster';
@@ -1381,26 +1480,32 @@ function finishWordMasterSession() {
 
 function renderWordMasterGame(pL, pR) {
     if(wmState === 'setup') {
-        pL.style.flex = "1"; pL.style.borderRight = "1px solid #f1f2f6"; pL.style.alignItems = "stretch"; pL.style.justifyContent = "flex-start";
-        pR.style.display = "flex";
+        // --- DÜZELTİLDİ: Sol ve Sağ Kartları Kart İçine Aldık ---
+        document.querySelector('.book-spread').classList.add('split-mode');
+        
         pL.innerHTML = `
-            <div class="wm-setup-title">1. Mod ve Tür</div>
-            <div class="wm-mode-toggle">
-                <div class="wm-mode-opt ${wmMode==='learn'?'active':''}" onclick="setWmMode('learn')">Öğren</div>
-                <div class="wm-mode-opt ${wmMode==='review'?'active':''}" onclick="setWmMode('review')">Tekrar Et</div>
+            <div class="wm-setup-card">
+                <div class="wm-setup-title">1. Mod ve Tür</div>
+                <div class="wm-mode-toggle">
+                    <div class="wm-mode-opt ${wmMode==='learn'?'active':''}" onclick="setWmMode('learn')">Öğren</div>
+                    <div class="wm-mode-opt ${wmMode==='review'?'active':''}" onclick="setWmMode('review')">Tekrar Et</div>
+                </div>
+                <button class="wm-type-btn ${wmType==='vocab'?'selected':''}" onclick="selectWmType('vocab')">📗 Kelime</button>
+                <button class="wm-type-btn ${wmType==='idioms'?'selected':''}" onclick="selectWmType('idioms')">🔮 Deyim</button>
+                <button class="wm-type-btn ${wmType==='phrasals'?'selected':''}" onclick="selectWmType('phrasals')">💬 Kalıp</button>
             </div>
-            <button class="wm-type-btn ${wmType==='vocab'?'selected':''}" onclick="selectWmType('vocab')">📗 Kelime</button>
-            <button class="wm-type-btn ${wmType==='idioms'?'selected':''}" onclick="selectWmType('idioms')">🔮 Deyim</button>
-            <button class="wm-type-btn ${wmType==='phrasals'?'selected':''}" onclick="selectWmType('phrasals')">💬 Kalıp</button>
         `;
         pR.innerHTML = `
-            <div class="wm-setup-title">2. Seviye Seç</div>
-            <div class="wm-level-grid">
-                ${['A1','A2','B1','B2','C1','C2'].map(l => `<button class="wm-level-btn" onclick="startWordGame('${l}')">${l}</button>`).join('')}
+            <div class="wm-setup-card">
+                <div class="wm-setup-title">2. Seviye Seç</div>
+                <div class="wm-level-grid">
+                    ${['A1','A2','B1','B2','C1','C2'].map(l => `<button class="wm-level-btn" onclick="startWordGame('${l}')">${l}</button>`).join('')}
+                </div>
             </div>
         `;
     } 
     else if(wmState === 'playing') {
+        document.querySelector('.book-spread').classList.remove('split-mode');
         const w = gameQueue[gameIndex];
         let favClass = isFavorite(w.en) ? 'active' : '';
         pL.style.flex = "2"; pL.style.borderRight = "none"; pL.style.alignItems = "center"; pL.style.justifyContent = "center";
@@ -1430,6 +1535,7 @@ function renderWordMasterGame(pL, pR) {
         `;
     }
     else if(wmState === 'result') {
+        document.querySelector('.book-spread').classList.remove('split-mode');
         pL.style.flex = "2"; pL.style.alignItems = "center"; pL.style.justifyContent = "center"; pR.style.display = "none";
         pL.innerHTML = `<div style="text-align:center;"><h1>🎉 Bitti!</h1><button class="wm-btn" style="background:var(--primary);" onclick="finishWordMasterSession()">Menüye Dön</button></div>`;
     }
@@ -2055,60 +2161,6 @@ function openDashList(type) {
     }
 }
 
-// LİSTE AÇMA FONKSİYONU
-function openDashList(type) {
-    const modal = document.getElementById('dashListModal');
-    const title = document.getElementById('dashListTitle');
-    const body = document.getElementById('dashListBody');
-    const items = window.tempLevelItems || [];
-    
-    body.innerHTML = ""; 
-    modal.style.display = 'flex'; 
-
-    if (type === 'all') {
-        title.innerText = "📋 Tüm Konular";
-        items.forEach(i => {
-            let status = i.completed ? '<span style="color:green; font-weight:bold;">✔</span>' : '<span style="color:#ccc;">⭕</span>';
-            let rowClass = i.completed ? 'dash-list-item done' : 'dash-list-item';
-            body.innerHTML += `
-                <div class="${rowClass}" onclick="document.getElementById('dashListModal').style.display='none'; openBook(contentData.find(x=>x.id=='${i.id}'))">
-                    <div style="display:flex; gap:10px; align-items:center;">${status} <span>${i.title}</span></div>
-                    <span style="color:#ccc;">➔</span>
-                </div>`;
-        });
-    } else {
-        title.innerText = "✅ Tamamlananlar";
-        let doneItems = items.filter(i => i.completed);
-        if(doneItems.length === 0) {
-            body.innerHTML = "<div style='text-align:center; padding:20px; color:#999;'>Henüz tamamlanan konu yok.</div>";
-        }
-        doneItems.forEach(i => {
-            body.innerHTML += `
-                <div class="dash-list-item" onclick="document.getElementById('dashListModal').style.display='none'; openBook(contentData.find(x=>x.id=='${i.id}'))">
-                    <span style="color:green">✔ ${i.title}</span> 
-                    <span>➔</span>
-                </div>`;
-        });
-    }
-}
-
-// YENİ YARDIMCI FONKSİYON: Zincirleme Görüntüleme
-function renderProgressiveList(items, container) {
-    let chainBroken = false;
-    items.forEach((item, index) => {
-        // Eğer zincir koptuysa (önceki tamamlanmadıysa) sonrakileri çizme
-        if (chainBroken) return;
-
-        renderBookCard(item, container);
-
-        // Eğer bu kitap tamamlanmamışsa, zinciri burada kes (bir sonraki döngüde çizim yapılmayacak)
-        // Böylece kullanıcı sadece "Tamamladıklarını" + "Sıradaki Tek Görevini" görür.
-        if (!item.completed) {
-            chainBroken = true;
-        }
-    });
-}
-
 function renderBookCard(i, container) {
     const d=document.createElement('div'); d.className='book-card';
     if(i.completed) d.classList.add('completed');
@@ -2433,9 +2485,9 @@ function handleTTS(action) {
                 // Sayfa sayısını doğru modülden al
                 if(currentCategory === 'reading') totalPages = Math.max(1, isTrMode ? bookChunksTr.length : bookChunksEn.length);
                 else {
-                     // Diğer kategorilerde (Vocab) sayfa sayısını hesapla
-                     const pNL = document.getElementById('pageNumL');
-                     if(pNL && pNL.innerText.includes('/')) totalPages = parseInt(pNL.innerText.split('/')[1]);
+                      // Diğer kategorilerde (Vocab) sayfa sayısını hesapla
+                      const pNL = document.getElementById('pageNumL');
+                      if(pNL && pNL.innerText.includes('/')) totalPages = parseInt(pNL.innerText.split('/')[1]);
                 }
 
                 if (currentCategory === 'reading' && pageIndex < totalPages - 1) {
@@ -2529,6 +2581,7 @@ function renderUserList(filter = "") {
         let score = 0;
         if(uData.userActivityLog) uData.userActivityLog.forEach(l => { score += (Number(l.points) || 0); });
         
+        // Hata düzeltmesi: Tek satırda kontrol
         let books = (uData.userStats && uData.userStats.booksRead) ? uData.userStats.booksRead : 0;
         if(books > 0) totalReads += books;
 
