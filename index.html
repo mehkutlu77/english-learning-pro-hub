@@ -1556,38 +1556,38 @@ function openBook(i) {
     
     if(currentCategory !== 'unknowns') trackStat('booksRead');
 
-    // --- DÜZELTME BAŞLANGICI: AYRAÇ TEMİZLEME VE DİL AYIRMA ---
-    // Veri kaynağını belirle (enText veya content olabilir)
+    // --- GÜÇLENDİRİLMİŞ AYRAÇ TEMİZLEME VE BÖLME ---
     let rawSource = i.enText || i.content || "";
     
-    // Eğer metinde ayraç varsa, hem ayracı sil hem de dilleri ayır
-    if (rawSource.includes('[Türkçe Çeviri]') || rawSource.includes('---')) {
-        let separator = rawSource.includes('[Türkçe Çeviri]') ? '[Türkçe Çeviri]' : '---';
-        let parts = rawSource.split(separator); // Metni ayraçtan ikiye böl
+    // Regex: <p> etiketleri arasında olsa bile --- veya [Türkçe Çeviri] ifadesini bulur
+    const splitterRegex = /(?:<p>\s*)?(?:---|\[Türkçe Çeviri\])(?:\s*<\/p>)?/i;
+
+    if (splitterRegex.test(rawSource)) {
+        let parts = rawSource.split(splitterRegex);
         
-        i.enText = parts[0].trim(); // İlk kısım İngilizce
-        i.trText = parts[1] ? parts[1].trim() : ""; // İkinci kısım Türkçe
-        
-        // Eğer 'content' kullanılıyorsa onu da temizle ki ekranda ayraç görünmesin
-        i.content = i.enText; 
+        if (parts.length > 1) {
+            i.enText = parts[0].trim(); // İngilizce Kısım
+            i.trText = parts[1].trim(); // Türkçe Kısım
+            i.content = i.enText;       // Görünen içeriği temizle
+        }
     }
-    // --- DÜZELTME BİTİŞİ ---
+    // ------------------------------------------------
 
     currentBook=i; 
     isTrMode=false; 
     quizAnswers={};
     
-    // UI Ayarları
+    // Arayüzü Temizle
     document.getElementById('libraryGrid').style.display='none'; 
     document.getElementById('libraryHeader').style.display='none'; 
     document.getElementById('openBookView').style.display='flex'; 
     document.getElementById('bookHeaderTitle').innerText=i.title;
     
-    // Araçlar
+    // Araçları Gizle
     const toolIds = ['myNoteTitleDisplay','langToggle','addPageBtn','flashcardBtn','ttsControls','ttsSpeed','liveStats','notebookTools'];
     toolIds.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
 
-    // Okları aç
+    // Okları Göster
     document.querySelector('.nav-arrow.prev').style.display='flex'; 
     document.querySelector('.nav-arrow.next').style.display='flex';
     
@@ -1597,24 +1597,28 @@ function openBook(i) {
         document.getElementById('ttsSpeed').style.display='block';
         document.getElementById('liveStats').style.display='flex'; 
         
-        // --- PARAGRAF PARÇALAMA SİSTEMİ (SPLITTER) ---
-        const splitRegex = /<\/p>|<\/div>|<br\s*\/?>\s*<br\s*\/?>|\n\s*\n/i;
+        // --- PARAGRAF AYIRMA ---
+        const chunkRegex = /<\/p>|<\/div>|<br\s*\/?>\s*<br\s*\/?>|\n\s*\n/i;
         
-        // İngilizceyi Parçala (Artık içinde --- yok)
-        bookChunksEn = (i.enText || "").split(splitRegex).filter(t => t.trim().length > 0).map(t => {
+        // İngilizce Parçala
+        bookChunksEn = (i.enText || "").split(chunkRegex).filter(t => t.trim().length > 0).map(t => {
             return t.includes('<') ? t : `<p>${t}</p>`;
         });
 
-        // Türkçeyi Parçala (Varsa)
-        if(i.trText && i.trText.trim().length > 0) {
-            bookChunksTr = (i.trText || "").split(splitRegex).filter(t => t.trim().length > 0).map(t => {
+        // Türkçe Parçala (Kontrollü)
+        if(i.trText && i.trText.length > 0) {
+            bookChunksTr = i.trText.split(chunkRegex).filter(t => t.trim().length > 0).map(t => {
                 return t.includes('<') ? t : `<p>${t}</p>`;
             });
+            // Eğer split işe yaramadıysa (tek paragrafsa) manuel ekle
+            if (bookChunksTr.length === 0 && i.trText) {
+                bookChunksTr = [i.trText.includes('<') ? i.trText : `<p>${i.trText}</p>`];
+            }
         } else {
-            bookChunksTr = []; // Çeviri yoksa boş
+            bookChunksTr = [];
         }
 
-        // Kelime sayısını hesapla
+        // Kelime Sayacı
         const cleanText = i.enText ? i.enText.replace(/<[^>]*>/g, '') : "";
         const wCount = document.getElementById('liveWordCount');
         if(wCount) wCount.innerText = cleanText.trim().split(/\s+/).length;
@@ -1638,8 +1642,7 @@ function openBook(i) {
     }
     
     setTimeout(() => { renderSpread(); }, 50);
-}
-/* --- GÜNCELLENMİŞ RENDER VE SAYFALAMA SİSTEMİ --- */
+}/* --- GÜNCELLENMİŞ RENDER VE SAYFALAMA SİSTEMİ --- */
 function renderSpread() {
     if ('speechSynthesis' in window) speechSynthesis.cancel();
     const pL=document.getElementById('pageLeft');
