@@ -206,12 +206,12 @@ body {
     padding: 20px;
 }
 
-/* --- YATAY KART GÖRÜNÜMÜ (KAYMA SORUNU ÇÖZÜLDÜ) --- */
+/* --- GÜÇLENDİRİLMİŞ YATAY KART (SABİT) --- */
 .single-page { 
     background: #fff;
-    width: 900px;           /* GENİŞLİK: Yatay Dikdörtgen */
-    height: 550px;          /* YÜKSEKLİK: Sabit */
-    max-width: 95vw;        /* Ekrandan taşmasın */
+    width: 900px;           /* Sabit Genişlik */
+    height: 550px;          /* Sabit Yükseklik */
+    max-width: 95vw;        /* Ekrana sığsın */
     padding: 50px 60px;     
     border-radius: 20px;    
     box-shadow: 0 15px 40px rgba(0,0,0,0.08); 
@@ -219,11 +219,11 @@ body {
     line-height: 1.8;       
     color: #2d3436 !important; 
     text-align: left; 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: flex-start;
+    
+    /* ÖNEMLİ DEĞİŞİKLİK: Flex yerine Block yapıldı */
+    display: block;         
     position: relative;
-    overflow-y: auto;       /* ÖNEMLİ: Yazı sığmazsa sadece İÇİ kayar, sayfa kaymaz */
+    overflow-y: auto;       /* Yazı sığmazsa içinde kaydır */
     overflow-x: hidden;
     border: 1px solid #e1e1e1;
     z-index: 10;
@@ -584,6 +584,83 @@ body {
 .badge-user { background: #dfe6e9; color: #636e72; }
 .del-user-btn { padding: 5px 10px; background: #fab1a0; color: #c0392b; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
 .del-user-btn:hover { background: #c0392b; color: white; }
+/* --- YENİ SABİT ALT BAR TASARIMI --- */
+.fixed-bottom-bar {
+    height: 80px;
+    width: 100%;
+    background: #fff;
+    border-top: 1px solid #f1f2f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-shrink: 0;
+    z-index: 20;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+}
+
+.action-btn-fixed {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 50px;
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.action-btn-fixed:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+.btn-complete { background: var(--success); color: white; }
+.btn-quiz { background: var(--accent); color: white; display: none; }
+
+/* --- ZARİF SİLME BUTONU (Reading & Liste İçin) --- */
+.book-card {
+    position: relative !important; /* Butonu köşeye sabitlemek için şart */
+}
+
+.delete-btn {
+    position: absolute;       /* Kartın içinde serbest hareket */
+    top: 5px;                 /* Üstten çok az boşluk */
+    right: 5px;               /* Sağdan çok az boşluk */
+    
+    background: transparent;  /* Arka plan şeffaf (Kutu yok) */
+    color: #b2bec3;           /* Silik gri renk (Göze batmaz) */
+    border: none;             /* Çerçeve yok */
+    
+    font-size: 1.5rem;        /* Çarpı boyutu */
+    line-height: 1;
+    cursor: pointer;
+    
+    opacity: 0;               /* Başlangıçta GİZLİ */
+    transition: all 0.2s;     /* Yumuşak geçiş */
+    z-index: 50;
+    padding: 0 5px;
+}
+
+/* Bilgisayarda üzerine gelince (Hover) görünür ve kızarır */
+.book-card:hover .delete-btn {
+    opacity: 1;
+}
+
+.delete-btn:hover {
+    color: #e74c3c !important; /* Üzerine gelince KIPKIRMIZI olur */
+    transform: scale(1.2);     /* Hafif büyür */
+}
+
+/* --- MOBİL İÇİN ÖZEL AYAR --- */
+@media (max-width: 900px) {
+    .delete-btn {
+        opacity: 1 !important;  /* Mobilde hep görünür olsun ama silik */
+        color: #dfe6e9;         /* Çok açık gri */
+        top: 0px;
+        right: 5px;
+        font-size: 1.8rem;      /* Mobilde parmakla basmak için biraz daha büyük */
+    }
+}
 </style>
 </head>
 <div id="dashListModal" class="dash-list-modal">
@@ -722,7 +799,10 @@ body {
             <div class="nav-arrow next" onclick="turnPage(1)">›</div>
             <div class="page-num left" id="pageNumL">1</div>
         </div>
-    </div>
+<div id="fixedBottomBar" class="fixed-bottom-bar" style="display:none;">
+        <button id="btnFixedComplete" onclick="markAsCompleted()" class="action-btn-fixed btn-complete">✅ OKUMAYI TAMAMLA</button>
+        <button id="btnFixedQuiz" class="action-btn-fixed btn-quiz">🧠 İLGİLİ TESTİ ÇÖZ</button>
+        </div>
         <div id="externalAppView" style="display:none; width:100%; height:100%; flex-direction:column;">
         <div class="book-top-bar">
             <button class="back-btn" onclick="closeExternalApp()">← Kapat</button>
@@ -760,6 +840,7 @@ body {
             <div class="backup-actions">
                 <button class="backup-btn dl-btn" onclick="exportData()">İndir (.json)</button>
                 <button class="backup-btn ul-btn" onclick="document.getElementById('restoreFile').click()">Yükle</button>
+                <button class="backup-btn" style="background:#8e44ad;" onclick="exportSmartTXT()">📄 Tüm Seti Al (.txt)</button>
                 <input type="file" id="restoreFile" style="display:none;" accept=".json" onchange="importData(this)">
             </div>
             <div style="font-size:0.8rem; color:#7f8c8d; margin-top:5px;">Verilerinizi düzenli olarak yedeklemeniz önerilir.</div>
@@ -1600,26 +1681,30 @@ function openBook(i) {
     document.querySelector('.nav-arrow.prev').style.display='flex'; 
     document.querySelector('.nav-arrow.next').style.display='flex';
     
-    if(currentCategory==='reading') { 
+if(currentCategory==='reading') { 
         document.getElementById('langToggle').style.display='block'; 
         document.getElementById('ttsControls').style.display='flex'; 
         document.getElementById('ttsSpeed').style.display='block';
         document.getElementById('liveStats').style.display='flex'; 
         
-        // --- PARAGRAF AYIRMA ---
+        // --- PARAGRAF AYIRMA VE TEMİZLİK ---
         const chunkRegex = /<\/p>|<\/div>|<br\s*\/?>\s*<br\s*\/?>|\n\s*\n/i;
         
-        // İngilizce Parçala
-        bookChunksEn = (i.enText || "").split(chunkRegex).filter(t => t.trim().length > 0).map(t => {
-            return t.includes('<') ? t : `<p>${t}</p>`;
+        // 1. Temizlik (Uzun alt çizgileri sil)
+        let rawEn = (i.enText || "").replace(/_{3,}/g, ''); 
+        
+        // 2. İngilizce Parçala ve ETKİLEŞİMLİ YAP (processInteractiveText Eklendi)
+        bookChunksEn = rawEn.split(chunkRegex).filter(t => t.trim().length > 0).map(t => {
+            let para = t.includes('<') ? t : `<p>${t}</p>`;
+            return processInteractiveText(para); // <-- Kelimeler artık tıklanabilir
         });
 
-        // Türkçe Parçala (Kontrollü)
+        // 3. Türkçe Parçala
         if(i.trText && i.trText.length > 0) {
-            bookChunksTr = i.trText.split(chunkRegex).filter(t => t.trim().length > 0).map(t => {
+            let rawTr = i.trText.replace(/_{3,}/g, ''); // Türkçedeki çizgileri de sil
+            bookChunksTr = rawTr.split(chunkRegex).filter(t => t.trim().length > 0).map(t => {
                 return t.includes('<') ? t : `<p>${t}</p>`;
             });
-            // Eğer split işe yaramadıysa (tek paragrafsa) manuel ekle
             if (bookChunksTr.length === 0 && i.trText) {
                 bookChunksTr = [i.trText.includes('<') ? i.trText : `<p>${i.trText}</p>`];
             }
@@ -1628,7 +1713,7 @@ function openBook(i) {
         }
 
         // Kelime Sayacı
-        const cleanText = i.enText ? i.enText.replace(/<[^>]*>/g, '') : "";
+        const cleanText = rawEn.replace(/<[^>]*>/g, '');
         const wCount = document.getElementById('liveWordCount');
         if(wCount) wCount.innerText = cleanText.trim().split(/\s+/).length;
         
@@ -1651,18 +1736,25 @@ function openBook(i) {
     }
     
     setTimeout(() => { renderSpread(); }, 50);
-}/* --- GÜNCELLENMİŞ RENDER VE SAYFALAMA SİSTEMİ --- */
+}
+/* --- GÜNCELLENMİŞ GÖRÜNÜM YÖNETİMİ (SABİT ALT MENÜLÜ) --- */
 function renderSpread() {
     if ('speechSynthesis' in window) speechSynthesis.cancel();
     const pL=document.getElementById('pageLeft');
     const pR=document.getElementById('pageRight');
+    
+    // Temizlik
     pL.innerHTML=""; pR.innerHTML="";
     
     document.querySelector('.book-spread').classList.remove('split-mode');
     pL.style.display = "flex"; pL.style.width = "100%"; 
     pR.style.display = "none"; 
 
-    // Word Master & Flashcard
+    // --- YENİ: Alt Barı Bul ve Başlangıçta Gizle ---
+    const bottomBar = document.getElementById('fixedBottomBar');
+    if(bottomBar) bottomBar.style.display = 'none';
+
+    // 1. OYUN VE KART MODLARI (Reading Değilse Çık)
     if(currentCategory === 'wordmaster') { renderWordMasterGame(pL, pR); return; }
     if(currentCategory === 'unknowns_flashcard' || currentCategory === 'favorites_flashcard') { renderUnknownFlashcards(pL, pR); return; }
     if(currentCategory==='question'){ 
@@ -1670,90 +1762,87 @@ function renderSpread() {
         renderQuizSingleMode(pL); return; 
     }
 
-    // --- SAYFALAMA (GRAMER VE READING İÇİN ORTAK) ---
+    // 2. SAYFALAMA İÇERİĞİNİ HAZIRLA
     let pages = [];
 
-    // 1. GRAMER (Artık Sayfalanacak)
+    // GRAMER
     if(currentCategory === 'grammar') {
-        // Grameri de Reading gibi boyutuna göre bölüyoruz
-        pages = paginateText(currentBook.content, false); // False = interaktif kelime yok
-
-        // Sadece SON sayfaya Not Defteri ve Tamamla Butonunu ekle
-        let lastPageExtra = "";
-        
-        let completeBtn = !currentBook.completed ? 
-            `<button onclick="markAsCompleted()" style="width:100%; margin-top:15px; padding:15px; background:#f1c40f; color:#fff; border:none; border-radius:15px; cursor:pointer; font-weight:bold;">✔ KONUYU TAMAMLA</button>` : 
-            `<div style="margin-top:15px; text-align:center; color:#27ae60; font-weight:bold; border:1px solid #27ae60; padding:5px; border-radius:12px;">✔ TAMAMLANDI</div>`;
-        
-        lastPageExtra = `<div style="margin-top:30px; padding-top:20px; border-top:2px dashed #eee;"><h4 style="color:#95a5a6; margin:0 0 10px 0;">📝 Konu Notları</h4><div class="notebook-wrapper" style="height:250px; border:1px solid #eee; border-radius:10px; padding:10px;"><textarea id="t" class="notebook-paper" oninput="saveTopicNote(this.value)" placeholder="Bu konuyla ilgili notlarınızı buraya alın...">${currentBook.userNotes||""}</textarea></div></div>${completeBtn}`;
-
-        // Son sayfayı güncelle (Mevcut içeriğe ekle)
-        if(pages.length > 0) {
-            pages[pages.length - 1] += lastPageExtra;
-        } else {
-            pages = [lastPageExtra];
+        pages = bookChunksEn || [];
+        // Gramerde de alt barı açalım (Sadece tamamla butonu)
+        if(bottomBar) {
+            bottomBar.style.display = 'flex';
+            const quizBtn = document.getElementById('btnFixedQuiz');
+            if(quizBtn) quizBtn.style.display = 'none'; // Quiz yok
+            updateCompleteButton();
         }
     }
-    // 2. READING
+    // READING
     else if(currentCategory === 'reading') {
-        // Eğer TR moduysa çeviri, değilse EN metni al
-        // Not: bookChunksEn/Tr paragraf moduydu, eğer kart modunda taşma oluyorsa paginateText daha güvenlidir.
-        // Ama kullanıcı paragraf modu istemişti, burada hibrit bir yapı kullanıyoruz:
-        // Önce paragraflara bölmeyi deneyelim.
+        pages = isTrMode ? bookChunksTr : bookChunksEn;
+        if(!pages || pages.length === 0) pages = ["<p>İçerik yükleniyor...</p>"];
         
-        let sourceArr = isTrMode ? bookChunksTr : bookChunksEn;
-        if(sourceArr && sourceArr.length > 0) {
-             pages = sourceArr; // Paragraf paragraf
-             // Eğer interaktiflik isteniyorsa (EN modunda)
-             if(!isTrMode) {
-                 pages = pages.map(p => processInteractiveText(p));
-             }
-        } else {
-             // Fallback (Paragraflanmamışsa)
-             let txt = isTrMode ? (currentBook.trText || "Çeviri yok.") : currentBook.enText;
-             pages = paginateText(txt, !isTrMode);
+        // --- YENİ: Alt Barı Yönet ---
+        if(bottomBar) {
+            bottomBar.style.display = 'flex';
+            updateCompleteButton(); // Tamamla butonunu güncelle
+            
+            // İlgili Test Var mı Kontrol Et
+            const currentTitleClean = currentBook.title.trim().toLowerCase();
+            const linkedQuiz = contentData.find(q => q.category === 'question' && q.title.trim().toLowerCase() === currentTitleClean);
+            const btnQuiz = document.getElementById('btnFixedQuiz');
+            
+            if (linkedQuiz) {
+                btnQuiz.style.display = 'flex';
+                btnQuiz.onclick = () => switchFromReadingToQuiz(linkedQuiz.id);
+                
+                // Test çözüldü mü?
+                if (linkedQuiz.completed) {
+                    btnQuiz.innerText = "↺ TESTİ TEKRAR ÇÖZ";
+                    btnQuiz.style.background = "#7f8c8d";
+                } else {
+                    btnQuiz.innerText = "🧠 İLGİLİ TESTİ ÇÖZ";
+                    btnQuiz.style.background = "#e67e22";
+                }
+            } else {
+                btnQuiz.style.display = 'none';
+            }
         }
     }
-    // 3. DIĞERLERİ
+    // DİĞER (Kelime Listeleri vb.)
     else {
         if(currentCategory==='vocabulary') pages=paginateVocab(currentBook.words, false);
         else if(currentCategory==='unknowns' || currentCategory==='favorites') pages=paginateVocab(currentBook.words, true);
     }
 
-    // --- SAYFA GÖSTERİMİ ---
-    if(pages.length === 0) pages = ["<p>İçerik yok.</p>"];
+    // 3. SAYFAYI GÖSTER
     if(pageIndex >= pages.length) pageIndex = pages.length - 1;
     if(pageIndex < 0) pageIndex = 0;
 
     pL.innerHTML = pages[pageIndex] || "";
 
-    // Gramer için not defteri stili ayarla
-    if(currentCategory === 'grammar' && document.getElementById('t')) {
-        applyStyleToElement(document.getElementById('t'));
-    }
-
-    // READING İÇİN SON SAYFA BUTONU
-    if(currentCategory === 'reading' && pageIndex === pages.length - 1) {
-        let finishBtn = !currentBook.completed ? 
-            `<button onclick="markAsCompleted()" style="width:100%; margin-top:30px; padding:15px; background:var(--success); color:white; border:none; border-radius:50px; cursor:pointer; font-weight:bold; font-size:1rem; box-shadow:0 5px 15px rgba(39, 174, 96, 0.3);">✅ OKUMAYI TAMAMLA</button>` : 
-            `<div style="margin-top:30px; text-align:center; color:var(--success); font-weight:bold; border:2px solid var(--success); padding:10px; border-radius:12px;">🎉 OKUMA TAMAMLANDI</div>`;
-        
-        const currentTitleClean = currentBook.title.trim().toLowerCase();
-        const linkedQuiz = contentData.find(q => q.category === 'question' && q.title.trim().toLowerCase() === currentTitleClean);
-        
-        if (linkedQuiz) { 
-            let qText = linkedQuiz.completed ? "↺ TESTİ TEKRAR ÇÖZ" : "🧠 İLGİLİ TESTİ ÇÖZ"; 
-            let qColor = linkedQuiz.completed ? "#7f8c8d" : "#e67e22"; 
-            finishBtn += `<div style="margin-top:20px; padding-top:20px; border-top:1px dashed #ccc;"><p style="text-align:center; color:#555; font-size:0.9em; margin-bottom:10px;">Metni anladın mı?</p><button onclick="switchFromReadingToQuiz('${linkedQuiz.id}')" style="width:100%; padding:15px; background:${qColor}; color:white; border:none; border-radius:50px; cursor:pointer; font-weight:bold;">${qText}</button></div>`; 
-        }
-        
-        let div = document.createElement('div');
-        div.innerHTML = finishBtn;
-        pL.appendChild(div);
-    }
+    // Gramer için not defteri stilini uygula
+    if(currentCategory === 'grammar' && document.getElementById('t')) applyStyleToElement(document.getElementById('t'));
     
     updateNav(pages.length);
 }
+
+// Butonun rengini ve yazısını ayarlayan yardımcı fonksiyon
+function updateCompleteButton() {
+    const btn = document.getElementById('btnFixedComplete');
+    if(!btn) return;
+    
+    if (currentBook.completed) {
+        btn.innerHTML = "🎉 TAMAMLANDI";
+        btn.style.background = "transparent";
+        btn.style.border = "2px solid #27ae60";
+        btn.style.color = "#27ae60";
+    } else {
+        btn.innerHTML = "✅ OKUMAYI TAMAMLA";
+        btn.style.background = "#27ae60";
+        btn.style.color = "white";
+        btn.style.border = "none";
+    }
+}  
 
 function turnPage(d){ 
     let step = (d > 0) ? 1 : -1;
@@ -2178,6 +2267,7 @@ function renderLibrary(q="") {
 }
 
 // LİSTE AÇMA FONKSİYONU
+/* --- GÜNCELLENMİŞ LİSTE GÖRÜNÜMÜ (SİLME BUTONLU) --- */
 function openDashList(type) {
     const modal = document.getElementById('dashListModal');
     const title = document.getElementById('dashListTitle');
@@ -2188,17 +2278,31 @@ function openDashList(type) {
     modal.style.display = 'flex'; 
 
     if (type === 'all') {
-        title.innerText = "📋 Tüm Konular";
+        title.innerText = "📋 Tüm Konular (Yönetim)";
         items.forEach(i => {
             let status = i.completed ? '<span style="color:green; font-weight:bold;">✔</span>' : '<span style="color:#ccc;">⭕</span>';
             let rowClass = i.completed ? 'dash-list-item done' : 'dash-list-item';
+            
+            // Satır HTML'i (SİLME BUTONU EKLENDİ)
             body.innerHTML += `
                 <div class="${rowClass}" onclick="document.getElementById('dashListModal').style.display='none'; openBook(contentData.find(x=>x.id=='${i.id}'))">
                     <div style="display:flex; gap:10px; align-items:center;">${status} <span>${i.title}</span></div>
-                    <span style="color:#ccc;">➔</span>
+                    
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <span onclick="deleteItem(event, '${i.id}'); setTimeout(() => openDashList('all'), 100);" 
+                              style="cursor:pointer; font-size:1.2rem; color:#ff7675; transition:0.2s;" 
+                              onmouseover="this.style.transform='scale(1.2)'" 
+                              onmouseout="this.style.transform='scale(1)'"
+                              title="Bu içeriği sil">
+                              🗑️
+                        </span>
+                        
+                        <span style="color:#ccc;">➔</span>
+                    </div>
                 </div>`;
         });
     } else {
+        // TAMAMLANANLAR LİSTESİ
         title.innerText = "✅ Tamamlananlar";
         let doneItems = items.filter(i => i.completed);
         if(doneItems.length === 0) {
@@ -2244,15 +2348,29 @@ function saveToDB(){
         localStorage.setItem('englishWorkbookData', JSON.stringify(contentData)); 
     }
 }
+/* --- GÜÇLENDİRİLMİŞ KAPATMA VE TEMİZLİK --- */
 function closeBook() { 
-    // TTS ve Otomatik Çevirmeyi Durdur
-    if ('speechSynthesis' in window) speechSynthesis.cancel();
-    ttsAutoPlay = false; // KİLİT NOKTA: Otomatik geçişi iptal et
+    // 1. SESLENDİRMEYİ ZORLA DURDUR
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+    ttsAutoPlay = false;
+    ttsObj = null; // Hafızayı boşalt
 
+    // 2. DİNLEMEYİ VE SAYAÇLARI DURDUR
     stopDictation(); 
-    saveReadingProgress(); 
     stopReadingTimer(); 
     
+    // 3. İLERLEMEYİ KAYDET
+    saveReadingProgress(); 
+    
+    // 4. DEĞİŞKENLERİ SIFIRLA (Donmayı önleyen kritik kısım)
+    bookChunksEn = [];
+    bookChunksTr = [];
+    currentBook = null;
+    pageIndex = 0;
+
+    // 5. WORD MASTER / FLASHCARD TEMİZLİĞİ
     if(currentCategory === 'wordmaster' && wmSessionCount > 0) { 
         logActivity('vocab', 'Word Master', `${wmSessionCount} Kelime Çalışıldı`); 
         wmSessionCount = 0; 
@@ -2262,11 +2380,18 @@ function closeBook() {
         fcSessionCount = 0; 
     } 
 
+    // 6. EKRANI KAPAT VE LİSTEYİ AÇ
     document.getElementById('openBookView').style.display='none'; 
     document.getElementById('libraryGrid').style.display='grid'; 
     document.getElementById('libraryHeader').style.display='flex'; 
     document.getElementById('mainSearch').value=""; 
-    if(currentCategory !== 'unknowns') renderLibrary(); 
+    
+    // Listeyi yenile (Hata varsa bile ana menüye dönmeyi garanti et)
+    try {
+        if(currentCategory !== 'unknowns') renderLibrary(); 
+    } catch(e) {
+        console.error("Liste yenileme hatası:", e);
+    }
 }
 function saveQuickQuiz() {
     let raw=document.getElementById('quickQuizInput').value; if(!raw.trim())return alert("Veri?"); let tm=raw.match(/Başlık:\s*(.*)/i); let t=tm?tm[1].trim():"Test "+Date.now(); let cl=raw.replace(/###SORULAR###/g,'').replace(/Başlık:.*\n?/g,''); let qb=cl.split(/Q\d+:/).slice(1); let qs=[]; qb.forEach(b=>{ let l=b.trim().split('\n'); let qt=l[0].trim(); let op=[]; let cor="A"; l.forEach(x=>{x=x.trim(); if(/^[A-D]\)/.test(x))op.push(x); if(x.toLowerCase().startsWith('correct:'))cor=x.split(':')[1].trim().toUpperCase();}); if(qt)qs.push({text:qt,options:op,correct:cor}); }); if(!qs.length)return alert("Hata!");
@@ -2511,7 +2636,26 @@ function clearGameLogs() {
     setTimeout(() => location.reload(), 1000);
 }
 function createNewNote() { contentData.push({id:Date.now().toString(),category:'notes',title:'Yeni Not',pages:["",""], styles:[]}); localStorage.setItem('englishWorkbookData',JSON.stringify(contentData)); openBook(contentData[contentData.length-1]); }
-function deleteItem(e,id){ e.stopPropagation(); if(confirm("Sil?")){contentData=contentData.filter(x=>x.id!==id); localStorage.setItem('englishWorkbookData',JSON.stringify(contentData)); renderLibrary();} }
+
+function deleteItem(e, id) {
+    e.stopPropagation(); // Karta tıklamayı engelle (kitabı açmasın)
+    
+    // 1. Onay İste
+    if (confirm("DİKKAT: Bu içeriği (Reading/Test) kalıcı olarak silmek istiyor musunuz?\n\n(Bu işlem geri alınamaz!)")) {
+        
+        // 2. İçeriği Listeden Çıkar
+        contentData = contentData.filter(x => x.id !== id);
+        
+        // 3. YENİ SİSTEME GÖRE KAYDET (Kritik Nokta)
+        saveToDB(); 
+        
+        // 4. Ekranı Yenile
+        renderLibrary();
+        
+        // 5. Bilgi Ver
+        showToast("İçerik kalıcı olarak silindi.", true);
+    }
+}
 function setupVoice() {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2846,6 +2990,119 @@ function deleteUser(username) {
         showToast(`${username} silindi.`);
         renderUserList(); // Listeyi yenile
     }
+}
+/* 2. BAŞLATMA (HATA KORUMALI GÜVENLİ MOD) */
+window.onload = function() { 
+    try {
+        console.log("Sistem başlatılıyor...");
+        
+        // 1. GÜVENLİK KİLİDİ: Veritabanı silinmişse boş oluştur (Tuşların kaybolmasını önler)
+        if(!localStorage.getItem('EnglishProMasterDB')) {
+            console.log("Veritabanı bulunamadı, yenisi oluşturuluyor...");
+            const defaultDB = { 'admin': { pass: 'mkutlu2108', data: defaultUserData } };
+            localStorage.setItem('EnglishProMasterDB', JSON.stringify(defaultDB));
+        }
+
+        initSystem(); 
+        setupVoice(); 
+        
+        // --- OTOMATİK GİRİŞ ---
+        const defaultUser = 'admin';
+        
+        // Admin kullanıcısı yoksa oluştur
+        if (!masterDB[defaultUser]) {
+            initSystem(); 
+        }
+
+        currentUser = defaultUser;
+        loadUserData(defaultUser);
+        
+        // Login ekranını kaldır
+        const overlay = document.getElementById('loginOverlay');
+        if(overlay) overlay.style.display = 'none';
+        
+        // Menüleri ve Tuşları Zorla Aç
+        const adminSec = document.getElementById('adminSection');
+        if(adminSec) adminSec.style.display = 'block';
+
+        buildGlobalDictionary();
+        switchCategory('reading');
+        renderLibrary();
+        
+        console.log("Sistem başarıyla ve hatasız açıldı.");
+        
+    } catch (e) {
+        console.error("KRİTİK BAŞLATMA HATASI:", e);
+        alert("Sistem açılırken bir hata oldu: " + e.message + "\n\nLütfen sayfayı yenileyin.");
+    }
+};
+/* --- YENİ ÖZELLİK: TÜM READING SETLERİNİ TXT OLARAK DIŞA AKTAR --- */
+function exportSmartTXT() {
+    // 1. Sadece Reading olanları çek
+    const readings = contentData.filter(x => x.category === 'reading');
+    
+    if (readings.length === 0) return alert("Sistemde hiç reading kaydı yok!");
+
+    let fullOutput = "";
+
+    // 2. Döngüye Başla
+    readings.forEach(r => {
+        // A) BAŞLIK
+        fullOutput += `${r.title}\n\n`;
+
+        // B) İNGİLİZCE METİN (HTML etiketlerini temizle, paragraf yap)
+        let enClean = r.enText
+            .replace(/<\/p>|<br>/gi, '\n') // Paragraf sonlarını alt satıra al
+            .replace(/<[^>]+>/g, '')       // Diğer HTML etiketlerini sil
+            .trim();
+        fullOutput += `${enClean}\n\n`;
+
+        // C) AYRAÇ
+        fullOutput += `---\n\n`;
+
+        // D) TÜRKÇE ÇEVİRİ BAŞLIĞI
+        fullOutput += `[Türkçe Çeviri]\n\n`;
+
+        // E) TÜRKÇE METİN
+        let trClean = (r.trText || "")
+            .replace(/<\/p>|<br>/gi, '\n')
+            .replace(/<[^>]+>/g, '')
+            .trim();
+        fullOutput += `${trClean}\n\n`;
+
+        // F) SORULAR (Eşleşen Quiz'i Bul)
+        // Başlığı aynı olan 'question' kategorisindeki veriyi arıyoruz
+        const quiz = contentData.find(q => q.category === 'question' && q.title.trim() === r.title.trim());
+
+        if (quiz && quiz.questions && quiz.questions.length > 0) {
+            fullOutput += `###SORULAR###\n`;
+            fullOutput += `Başlık: ${r.title}\n\n`; // Import formatına uygun olması için
+
+            quiz.questions.forEach((q, idx) => {
+                fullOutput += `Q${idx + 1}: ${q.text}\n`;
+                // Şıkları ekle
+                q.options.forEach(opt => {
+                    fullOutput += `${opt}\n`;
+                });
+                // Doğru cevabı ekle
+                fullOutput += `Correct: ${q.correct}\n\n`;
+            });
+        }
+
+        // G) SET SONU AYRACI (KRİTİK KISIM)
+        fullOutput += `===YENİ===\n\n`;
+    });
+
+    // 3. Dosyayı İndir
+    const blob = new Blob([fullOutput], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `TUM_READING_SETI_(${readings.length}_Adet).txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+        showToast(`${readings.length} adet set başarıyla dışa aktarıldı!`);
 }
 </script>
 </body>
