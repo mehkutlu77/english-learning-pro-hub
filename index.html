@@ -538,7 +538,7 @@ body {
 .login-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
-    z-index: 9999; display: flex; justify-content: center; align-items: center;
+    z-index: 9999; display: none; /* BAŞLANGIÇTA GİZLİ */ justify-content: center; align-items: center;
 }
 .login-card {
     background: white; width: 400px; padding: 40px; border-radius: 20px;
@@ -974,15 +974,33 @@ function logActivity(type, title, detail, durationSeconds = 0, points = 0) {
 }
 /* 2. BAŞLATMA */
 window.onload = function() { 
-    initSystem(); // Kullanıcı sistemini hazırla
+    initSystem(); // Sistemi başlat
     setupVoice(); 
     
-    // Kayıtlı kullanıcı varsa otomatik giriş yap
-    const savedUser = localStorage.getItem('lastSessionUser');
-    if (savedUser && masterDB[savedUser]) {
-        document.getElementById('loginUser').value = savedUser;
-        handleLogin(); 
+    // --- OTOMATİK GİRİŞ (Login Ekranını Atla) ---
+    const defaultUser = 'admin';
+    
+    // Eğer admin kullanıcısı veritabanında yoksa oluştur (InitSystem zaten yapar ama garanti olsun)
+    if (!masterDB[defaultUser]) {
+        initSystem(); 
     }
+
+    // Admin olarak giriş yapmış gibi davran
+    currentUser = defaultUser;
+    loadUserData(defaultUser);
+    
+    // Login ekranını gizle
+    const overlay = document.getElementById('loginOverlay');
+    if(overlay) overlay.style.display = 'none';
+    
+    // Admin menüsünü göster
+    const adminSec = document.getElementById('adminSection');
+    if(adminSec) adminSec.style.display = 'block';
+
+    // Sözlüğü oluştur ve ana sayfayı aç
+    buildGlobalDictionary();
+    switchCategory('reading');
+    renderLibrary();
 };
 
 /* --- METİN PARÇALAMA & İŞLEME SİSTEMİ (V35.1 RESTORED) --- */
@@ -2319,57 +2337,189 @@ function toggleUnknown(el, word, meaning) {
 function isUnknown(word) { return userUnknownWords.some(u => u.en.toLowerCase() === word.toLowerCase()); }
 
 function closeAdmin(){ document.getElementById('adminModal').style.display='none'; }
-
+// --- GÜNCELLENMİŞ KAYDETME FONKSİYONU (ÇOKLU YÜKLEME DESTEKLİ) ---
 function saveData() {
-    let c=document.getElementById('inputCategory').value; 
-    let r=document.getElementById('bulkInput').value; 
-    if(!r.trim()) return alert("Veri?"); 
-    
-    if(c === 'reading' && r.includes('###SORULAR###')) {
-        let parts = r.split('###SORULAR###');
-        let lines = parts[0].trim().split('\n');
-        let title = lines[0].trim();
-        let body = lines.slice(1).join('\n');
-        
-        contentData.push({ id: Date.now().toString(), category: 'reading', title: title, enText: body, trText: "", completed: false });
-        
-        let qb=parts[1].trim().split(/Q\d+:/).slice(1); 
-        let qs=[]; 
-        qb.forEach(b=>{ let l=b.trim().split('\n'); let qt=l[0].trim(); let op=[]; let cor="A"; l.forEach(x=>{x=x.trim(); if(/^[A-D]\)/.test(x))op.push(x); if(x.toLowerCase().startsWith('correct:'))cor=x.split(':')[1].trim().toUpperCase();}); if(qt)qs.push({text:qt,options:op,correct:cor}); });
-        
-        contentData.push({id: (Date.now()+1).toString(), category:'question', title: title, questions: qs, completed: false});
-        showToast("Reading + Quiz Eklendi");
-    } else if(c==='grammar'){ 
-        let l=r.split('\n'); let ti=null, co=""; 
-        const fg=()=>{ if(ti){ if(!contentData.some(x => x.category === 'grammar' && x.title === ti)) { contentData.push({id:Date.now()+Math.random(), category:'grammar', title:ti, content:co}); } } }; 
-        l.forEach(x=>{ let cx=x.trim(); if(/^\d+\./.test(cx)){fg(); ti=cx; co=`<h3>${cx}</h3>`;} else if(cx){ if(/^(Gramer|Örnek)/.test(cx))co+=`<span class="highlight-header">${cx}</span>`; else if(cx.startsWith('·'))co+=`<li>${cx.replace('·','')}</li>`; else co+=`<p>${cx}</p>`; } }); fg(); showToast("Gramer eklendi!"); 
-    } else { 
-        contentData.push({id:Date.now().toString(), category:c, title:"Yeni İçerik", content:r}); 
-        showToast("İçerik Eklendi"); 
+    let c = document.getElementById('inputCategory').value;
+    let r = document.getElementById('bulkInput').value.trim();
+    if (!r) return alert("Lütfen veri girin.");
+
+    // --- MOD 1: JSON FORMATI (Yapay Zeka Çıktısı) ---
+    // [ ile başlayıp ] ile bitiyorsa
+    if (r.startsWith('[') && r.endsWith(']')) {
+        try {
+            let bulkData = JSON.parse(r);
+            if (Array.isArray(bulkData)) {
+                let addedCount = 0;
+                bulkData.forEach(item => {
+                    // ID yoksa veya çakışıyorsa yeni ID ver
+                    if (!item.id || contentData.some(x => x.id === item.id)) {
+                        item.id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                    }
+                    if (!item.category) item.category = c;
+                    item.completed = false; // Yeni içerik okunmadı olarak başlar
+                    
+                    contentData.push(item);
+                    addedCount++;
+                });
+                
+                saveToDB(); 
+                showToast(`Süper! ${addedCount} içerik JSON olarak yüklendi.`);
+                closeAdmin();
+                renderLibrary();
+                return; // İşlem bitti
+            }
+        } catch (e) {
+            console.log("JSON değil, metin kontrol ediliyor...");
+        }
     }
-    
-    saveToDB(); // YENİ SİSTEM: Kullanıcı veritabanına kaydet
-    closeAdmin(); renderLibrary();
+
+    // --- MOD 2: MANUEL ÇOKLU YÜKLEME (===YENİ=== Ayracı ile) ---
+    // Metinlerin arasına ===YENİ=== yazarsan hepsini ayrı ayrı ekler
+    if (r.includes('===YENİ===')) {
+        let blocks = r.split('===YENİ===');
+        let count = 0;
+        blocks.forEach(block => {
+            if(block.trim()) {
+                processSingleText(c, block.trim()); // Her parçayı işle
+                count++;
+            }
+        });
+        
+        saveToDB();
+        showToast(`${count} adet metin ayrıştırılıp eklendi.`);
+        closeAdmin();
+        renderLibrary();
+        return; // İşlem bitti
+    }
+
+    // --- MOD 3: TEKİL YÜKLEME (Normal Yapıştırma) ---
+    processSingleText(c, r);
+    saveToDB();
+    closeAdmin();
+    renderLibrary();
 }
+
+// --- YARDIMCI FONKSİYON: Tek bir metin bloğunu işler ---
+function processSingleText(category, text) {
+    // A) Reading ve Quiz Formatı (###SORULAR### varsa)
+    if (category === 'reading' && text.includes('###SORULAR###')) {
+        let parts = text.split('###SORULAR###');
+        let lines = parts[0].trim().split('\n');
+        let title = lines[0].trim(); // İlk satır başlık
+        let body = lines.slice(1).join('\n'); // Gerisi metin
+
+        // 1. Okuma Parçasını Ekle
+        contentData.push({ 
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 5), 
+            category: 'reading', 
+            title: title, 
+            enText: body, 
+            trText: "", 
+            completed: false 
+        });
+
+        // 2. Soruları Ekle
+        let qb = parts[1].trim().split(/Q\d+:/).slice(1);
+        let qs = [];
+        qb.forEach(b => { 
+            let l = b.trim().split('\n'); 
+            let qt = l[0].trim(); 
+            let op = []; 
+            let cor = "A"; 
+            l.forEach(x => { 
+                x = x.trim(); 
+                if (/^[A-D]\)/.test(x)) op.push(x); 
+                if (x.toLowerCase().startsWith('correct:')) cor = x.split(':')[1].trim().toUpperCase(); 
+            }); 
+            if (qt) qs.push({ text: qt, options: op, correct: cor }); 
+        });
+
+        contentData.push({ 
+            id: (Date.now() + 1).toString() + Math.random().toString(36).substr(2, 5), 
+            category: 'question', 
+            title: title, 
+            questions: qs, 
+            completed: false 
+        });
+        
+    } 
+    // B) Gramer Formatı
+    else if (category === 'grammar') {
+        let l = text.split('\n'); 
+        let ti = null, co = "";
+        
+        if(/^\d+\./.test(l[0])) ti = l[0].trim();
+        else ti = "Gramer - " + Date.now();
+
+        const addGrammar = () => { 
+            if (ti) { 
+                contentData.push({ 
+                    id: Date.now() + Math.random(), 
+                    category: 'grammar', 
+                    title: ti, 
+                    content: co,
+                    completed: false
+                }); 
+            } 
+        };
+        
+        l.forEach(x => { 
+            let cx = x.trim(); 
+            if (/^\d+\./.test(cx)) { 
+                if(co !== "") addGrammar(); 
+                ti = cx; 
+                co = `<h3>${cx}</h3>`; 
+            } else if (cx) { 
+                if (/^(Gramer|Örnek)/.test(cx)) co += `<span class="highlight-header">${cx}</span>`; 
+                else if (cx.startsWith('·')) co += `<li>${cx.replace('·', '')}</li>`; 
+                else co += `<p>${cx}</p>`; 
+            } 
+        }); 
+        addGrammar(); 
+    } 
+    // C) Basit Format (Sadece Metin)
+    else {
+        let titleInput = document.getElementById('inputTitle');
+        let title = (titleInput && titleInput.value) ? titleInput.value : "İçerik " + Date.now();
+        
+        contentData.push({ 
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 5), 
+            category: category, 
+            title: title, 
+            content: text, 
+            enText: text, 
+            completed: false 
+        });
+    }
+}
+
 function removeDuplicates() {
     if(!confirm("Yinelenen içerikler temizlensin mi?")) return;
     const unique = []; const map = new Map();
-    contentData.forEach(item => { if(!map.has(item.id)){ map.set(item.id, true); unique.push(item); }});
+    // Title ve Category aynıysa yinelenen say
+    contentData.forEach(item => { 
+        let key = item.title + '|' + item.category;
+        if(!map.has(key)){ 
+            map.set(key, true); 
+            unique.push(item); 
+        }
+    });
     contentData = unique;
-    localStorage.setItem('englishWorkbookData', JSON.stringify(contentData));
+    saveToDB(); // DOĞRU KAYIT
     showToast("Temizlendi!"); setTimeout(() => location.reload(), 1000);
 }
 
 function clearGameLogs() {
-    if(!confirm("Geçmişteki tüm 'External Game' (Oyun) puanları ve kayıtları silinsin mi?\n\nBu işlem toplam puanını düşürecektir.")) return;
+    if(!confirm("Geçmişteki tüm 'External Game' (Oyun) puanları ve kayıtları silinsin mi?")) return;
     
-    // Sadece external_game olmayanları tut, diğerlerini filtrele
+    // Sadece external_game olmayanları tut
     userActivityLog = userActivityLog.filter(log => log.type !== 'external_game');
-    localStorage.setItem('userActivityLog', JSON.stringify(userActivityLog));
+    saveToDB(); // DOĞRU KAYIT
     
-    showToast("Oyun geçmişi ve puanları silindi!");
+    showToast("Oyun geçmişi silindi!");
     setTimeout(() => location.reload(), 1000);
-}function createNewNote() { contentData.push({id:Date.now().toString(),category:'notes',title:'Yeni Not',pages:["",""], styles:[]}); localStorage.setItem('englishWorkbookData',JSON.stringify(contentData)); openBook(contentData[contentData.length-1]); }
+}
+function createNewNote() { contentData.push({id:Date.now().toString(),category:'notes',title:'Yeni Not',pages:["",""], styles:[]}); localStorage.setItem('englishWorkbookData',JSON.stringify(contentData)); openBook(contentData[contentData.length-1]); }
 function deleteItem(e,id){ e.stopPropagation(); if(confirm("Sil?")){contentData=contentData.filter(x=>x.id!==id); localStorage.setItem('englishWorkbookData',JSON.stringify(contentData)); renderLibrary();} }
 function setupVoice() {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -2387,20 +2537,27 @@ function saveMyPage(idx,val){ currentBook.pages[idx]=val; saveToDB(); }
 function saveNoteTitle(val){ currentBook.title=val; saveToDB(); }
 function clearCategoryData(){ if(confirm("Sil?")){contentData=contentData.filter(i=>i.category!==document.getElementById('inputCategory').value); localStorage.setItem('englishWorkbookData',JSON.stringify(contentData)); switchCategory(currentCategory);} }
 function exportData() {
+    // DOĞRUDAN CANLI VERİYİ AL (Localstorage'dan okuma)
     const data = { 
-        data: localStorage.getItem('englishWorkbookData'), 
-        stats: localStorage.getItem('userStats'), 
-        notes: localStorage.getItem('myGeneralNotes'), 
-        unknowns: localStorage.getItem('userUnknownWords'), 
-        knowns: localStorage.getItem('userKnownVocabulary'), 
-        favorites: localStorage.getItem('userFavorites'),
-        grammarStats: localStorage.getItem('grammarGameStats'), 
-        phraseStats: localStorage.getItem('phraseMasterStats'),
-        activityLog: localStorage.getItem('userActivityLog')
+        data: JSON.stringify(contentData), 
+        stats: JSON.stringify(userStats), 
+        unknowns: JSON.stringify(userUnknownWords), 
+        knowns: JSON.stringify(userKnownVocabulary), 
+        favorites: JSON.stringify(userFavorites),
+        activityLog: JSON.stringify(userActivityLog)
     };
-    const blob = new Blob([JSON.stringify(data)], {type: 'application/json'}); const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'english_pro_system_full_backup.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast("Yedeklendi!");
+    
+    const blob = new Blob([JSON.stringify(data)], {type: 'application/json'}); 
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); 
+    a.href = url; 
+    a.download = `EnglishPro_Yedek_${new Date().toLocaleDateString()}.json`; 
+    document.body.appendChild(a); 
+    a.click(); 
+    document.body.removeChild(a); 
+    showToast("Güncel Veriler Yedeklendi!");
 }
+    
 function importData(input) {
     const file = input.files[0]; if(!file) return;
     const reader = new FileReader();
@@ -2437,18 +2594,31 @@ function importData(input) {
     }; 
     reader.readAsText(file);
 }
+
 function resetProgress() {
-    if(!confirm("⚠️ DİKKAT! Tüm ilerleme SIFIRLANACAK.\n\nEmin misin?")) return;
-    userStats = { booksRead:0, pagesTurned:0, quizzesTaken:0, wordsAdded:0, notesTaken:0, totalCorrect:0, totalWrong:0 };
-    localStorage.setItem('userStats', JSON.stringify(userStats));
-    userUnknownWords = []; userKnownVocabulary = []; userFavorites = []; userActivityLog = [];
-    localStorage.setItem('userUnknownWords', JSON.stringify([]));
-    localStorage.setItem('userKnownVocabulary', JSON.stringify([]));
-    localStorage.setItem('userFavorites', JSON.stringify([]));
-    localStorage.setItem('userActivityLog', JSON.stringify([]));
-    contentData.forEach(book => { book.completed = false; if(book.stats) delete book.stats; });
-    localStorage.setItem('englishWorkbookData', JSON.stringify(contentData));
-    showToast("Tüm ilerleme sıfırlandı!"); setTimeout(() => location.reload(), 1500);
+    if(!confirm("TAM SIFIRLAMA YAPILSIN MI?\n\n- Okunan kitap işaretleri kalkacak.\n- Puanlar ve istatistikler silinecek.\n- Kelime listeleri (Bildiğim/Bilmediğim) temizlenecek.\n\n(Ders içerikleri SİLİNMEYECEK, sadece başa döneceksin.)")) return;
+    
+    // 1. İstatistikleri Sıfırla
+    userStats = { booksRead:0, pagesTurned:0, quizzesTaken:0, wordsAdded:0, notesTaken:0, totalCorrect:0, totalWrong:0, dailyActivity: {} };
+    userActivityLog = [];
+    
+    // 2. Kelime Listelerini ve Favorileri Temizle (Tamamen başa dönmek için)
+    userUnknownWords = [];
+    userKnownVocabulary = [];
+    userFavorites = [];
+
+    // 3. İçeriklerin "Okundu" Durumunu Kesin Olarak Kaldır
+    for (let i = 0; i < contentData.length; i++) {
+        contentData[i].completed = false;       // Yeşil tiki kaldır
+        contentData[i].readingDuration = 0;     // Süreyi sıfırla
+        if(contentData[i].stats) delete contentData[i].stats; // Test sonuçlarını sil
+    }
+
+    // 4. Veritabanına Kaydet
+    saveToDB();
+    
+    showToast("Her şey sıfırlandı! Başarılar..."); 
+    setTimeout(() => location.reload(), 1000);
 }
 function applyGlobalStyle(type, val) {
     if(type === 'color') currentPenStyle.color = val;
