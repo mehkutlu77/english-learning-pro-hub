@@ -206,25 +206,28 @@ body {
     padding: 20px;
 }
 
+/* --- YATAY KART GÖRÜNÜMÜ (KAYMA SORUNU ÇÖZÜLDÜ) --- */
 .single-page { 
-    background: white;
-    width: 100%; max-width: 800px; 
-    min-height: 500px; 
-    height: auto;
-    padding: 60px; 
-    border-radius: 25px; 
-    box-shadow: 0 20px 60px rgba(0,0,0,0.08); 
-    font-size: 1.4rem; 
-    line-height: 2.2; 
-    color: #2d3436 !important; /* Metin rengini koyu griye zorla */
+    background: #fff;
+    width: 900px;           /* GENİŞLİK: Yatay Dikdörtgen */
+    height: 550px;          /* YÜKSEKLİK: Sabit */
+    max-width: 95vw;        /* Ekrandan taşmasın */
+    padding: 50px 60px;     
+    border-radius: 20px;    
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08); 
+    font-size: 1.25rem;     
+    line-height: 1.8;       
+    color: #2d3436 !important; 
     text-align: left; 
-    display: flex; flex-direction: column; justify-content: flex-start;
+    display: flex; 
+    flex-direction: column; 
+    justify-content: flex-start;
     position: relative;
-    border: 1px solid #fff;
-    transition: transform 0.3s ease;
-    z-index: 10; /* Katman sırasını öne al */
+    overflow-y: auto;       /* ÖNEMLİ: Yazı sığmazsa sadece İÇİ kayar, sayfa kaymaz */
+    overflow-x: hidden;
+    border: 1px solid #e1e1e1;
+    z-index: 10;
 }
-
 /* --- DÜZELTME: AKILLI GÖRÜNÜM YÖNETİMİ V2 --- */
 #pageRight { display: none; }
 
@@ -972,80 +975,68 @@ function logActivity(type, title, detail, durationSeconds = 0, points = 0) {
     userActivityLog.push({ date, type, title, detail, timestamp: Date.now(), duration: durationSeconds, points: points });
     saveToDB();
 }
-/* 2. BAŞLATMA */
+/* 2. BAŞLATMA (GÜVENLİ MOD) */
 window.onload = function() { 
-    initSystem(); // Sistemi başlat
-    setupVoice(); 
-    
-    // --- OTOMATİK GİRİŞ (Login Ekranını Atla) ---
-    const defaultUser = 'admin';
-    
-    // Eğer admin kullanıcısı veritabanında yoksa oluştur (InitSystem zaten yapar ama garanti olsun)
-    if (!masterDB[defaultUser]) {
+    try {
+        console.log("Sistem başlatılıyor...");
         initSystem(); 
+        setupVoice(); 
+        
+        // --- OTOMATİK GİRİŞ ---
+        const defaultUser = 'admin';
+        
+        // Veritabanı kontrolü
+        if (!masterDB[defaultUser]) {
+            console.log("Kullanıcı yeniden oluşturuluyor...");
+            initSystem(); 
+        }
+
+        currentUser = defaultUser;
+        loadUserData(defaultUser);
+        
+        // Login ekranını kaldır
+        const overlay = document.getElementById('loginOverlay');
+        if(overlay) overlay.style.display = 'none';
+        
+        // Menüleri aç
+        const adminSec = document.getElementById('adminSection');
+        if(adminSec) adminSec.style.display = 'block';
+
+        buildGlobalDictionary();
+        switchCategory('reading');
+        renderLibrary();
+        console.log("Sistem hazır!");
+        
+    } catch (e) {
+        console.error("Başlatma hatası:", e);
+        alert("Sistem başlatılırken bir hata oluştu. Lütfen sayfayı yenileyin.");
     }
-
-    // Admin olarak giriş yapmış gibi davran
-    currentUser = defaultUser;
-    loadUserData(defaultUser);
-    
-    // Login ekranını gizle
-    const overlay = document.getElementById('loginOverlay');
-    if(overlay) overlay.style.display = 'none';
-    
-    // Admin menüsünü göster
-    const adminSec = document.getElementById('adminSection');
-    if(adminSec) adminSec.style.display = 'block';
-
-    // Sözlüğü oluştur ve ana sayfayı aç
-    buildGlobalDictionary();
-    switchCategory('reading');
-    renderLibrary();
 };
 
-/* --- METİN PARÇALAMA & İŞLEME SİSTEMİ (V35.1 RESTORED) --- */
-function paginateText(html, makeInteractive) {
-    const tempDiv = document.createElement('div');
+/* --- METİN PARÇALAMA & İŞLEME SİSTEMİ (DÜZELTİLDİ) --- */
+function paginateText(html, makeInteractive, charLimit = 950) {
+    let tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
-    
-    // Eğer metin çok kısaysa bölmeye gerek yok
-    if(tempDiv.innerText.length < 500 && !tempDiv.querySelector('img')) {
-        return [makeInteractive ? processInteractiveText(html) : html];
+    let fullText = tempDiv.innerHTML;
+
+    // Eğer metin kısaysa bölme
+    if (tempDiv.innerText.length < charLimit) {
+        return [makeInteractive ? processInteractiveText(fullText) : fullText];
     }
 
-    const pages = [];
-    let currentContent = '';
-    let currentLength = 0;
-    const CHAR_LIMIT = 500; // Karakter sınırı
+    // Uzunsa, cümle veya paragraf sonlarından böl
+    let splitRegex = new RegExp(`.{1,${charLimit}}(\\s+|<\\/p>|<br>|[.!?])`, 'g');
+    let rawPages = fullText.match(splitRegex) || [fullText];
+    let pages = [];
 
-    // Child Node'ları gezerek böl
-    Array.from(tempDiv.childNodes).forEach(node => {
-        let nodeHTML = node.outerHTML || node.nodeValue || "";
-        let nodeText = node.textContent || "";
-        
-        // Eğer node boşluktan ibaretse atla
-        if(!nodeHTML.trim()) return;
-
-        // Eğer mevcut sayfa dolduysa
-        if (currentLength + nodeText.length > CHAR_LIMIT) {
-            if (currentContent) {
-                pages.push(makeInteractive ? processInteractiveText(currentContent) : currentContent);
-            }
-            currentContent = nodeHTML;
-            currentLength = nodeText.length;
-        } else {
-            currentContent += nodeHTML;
-            currentLength += nodeText.length;
+    rawPages.forEach(chunk => {
+        if(chunk.trim().length > 10) {
+            pages.push(makeInteractive ? processInteractiveText(chunk) : chunk);
         }
     });
 
-    if (currentContent) {
-        pages.push(makeInteractive ? processInteractiveText(currentContent) : currentContent);
-    }
-    
-    return pages.length > 0 ? pages : [makeInteractive ? processInteractiveText(html) : html];
+    return pages;
 }
-
 function processInteractiveText(html) {
     // Sadece metin düğümlerini bulup kelimelere ayırır, HTML taglerine dokunmaz
     const tempDiv = document.createElement('div');
