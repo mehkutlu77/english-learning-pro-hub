@@ -197,37 +197,89 @@ body {
 .notebook-tools { display:none; align-items:center; gap:10px; margin-left:20px; padding-left:20px; border-left:1px solid #eee; }
 .tool-select { padding:5px 10px; border-radius:12px; border:1px solid #dfe6e9; font-size:0.85rem; background:#fff; color:var(--text-color); margin-right:5px; cursor:pointer; font-family: var(--font-main); }
 
-/* CARD READER STYLE (V35.0 PARAGRAPH MODE) */
+/* --- TEK SAYFA / TAM EKRAN OKUMA MODU (V36.0 FINAL) --- */
 .book-spread { 
-    flex: 1; display: flex; position: relative; 
-    overflow-y: auto; overflow-x: hidden;
-    background: #f0f2f5; height: 100%; 
-    align-items: center; justify-content: center; 
-    padding: 20px;
+    flex: 1; 
+    display: block;          /* Block yapısı ile yukarıdan aşağı akış */
+    overflow-y: auto;        /* Dikey scroll burada çalışacak */
+    background: #f0f2f5; 
+    height: 100%; 
+    padding: 10px;
+    position: relative;
 }
 
-/* --- GÜÇLENDİRİLMİŞ YATAY KART (SABİT) --- */
 .single-page { 
     background: #fff;
-    width: 900px;           /* Sabit Genişlik */
-    height: 550px;          /* Sabit Yükseklik */
-    max-width: 95vw;        /* Ekrana sığsın */
-    padding: 50px 60px;     
-    border-radius: 20px;    
-    box-shadow: 0 15px 40px rgba(0,0,0,0.08); 
-    font-size: 1.25rem;     
-    line-height: 1.8;       
-    color: #2d3436 !important; 
+    width: 100%;             
+    max-width: 1200px;       /* Geniş ekranlar için ideal okuma alanı */
+    min-height: auto;        /* Sabit yükseklik yok, içeriğe göre uzasın */
+    height: auto;            /* Otomatik yükseklik */
+    margin: 0 auto 100px auto; /* Alt tarafta boşluk bırak (Menüler için) */
+    padding: 40px 50px;     
+    border-radius: 15px;    
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05); 
+    font-size: 1.25rem;      
+    line-height: 1.8;        
+    color: #2d3436; 
     text-align: left; 
-    
-    /* ÖNEMLİ DEĞİŞİKLİK: Flex yerine Block yapıldı */
-    display: block;         
-    position: relative;
-    overflow-y: auto;       /* Yazı sığmazsa içinde kaydır */
-    overflow-x: hidden;
     border: 1px solid #e1e1e1;
-    z-index: 10;
+    display: block !important;
 }
+/* Sağ sayfayı CSS ile de gizleyelim */
+#pageRight { display: none !important; }
+
+/* Mobil Uyumluluk */
+@media (max-width: 768px) {
+    .single-page {
+        padding: 30px 20px;
+        font-size: 1.1rem;
+        max-width: 100%;
+    }
+}
+/* GRAMER VE METİN İÇERİK DÜZENLEYİCİLERİ */
+.single-page h1, .single-page h2, .single-page h3, .single-page h4 {
+    color: var(--primary);
+    margin: 25px 0 15px 0;
+    font-weight: 700;
+    display: block;      /* Satırı kaplamaya zorla */
+    width: 100%;         /* Tam genişlik */
+    border-bottom: 2px solid #f1f2f6; /* Altına çizgi çekerek ayır */
+    padding-bottom: 5px;
+    line-height: 1.4;
+}
+
+.single-page p {
+    margin-bottom: 15px;
+    display: block; 
+    width: 100%;
+}
+
+.single-page ul, .single-page ol {
+    margin-bottom: 20px;
+    padding-left: 25px;
+    display: block;
+}
+
+.single-page li {
+    margin-bottom: 8px;
+}
+
+/* TABLO GÖRÜNÜMÜNÜ DÜZELTME */
+/* Gramer konuları genelde tablo olur, bu kod tabloları güzelleştirir */
+.single-page table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 1rem;
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    display: table !important; /* Tablo yapısını koru */
+}
+.single-page th { background: var(--primary); color: white; padding: 12px; text-align: left; border: 1px solid #34495e; }
+.single-page td { border: 1px solid #dfe6e9; padding: 10px; color: #444; vertical-align: top; }
+.single-page tr:nth-child(even) { background-color: #f1f2f6; }
 /* --- DÜZELTME: AKILLI GÖRÜNÜM YÖNETİMİ V2 --- */
 #pageRight { display: none; }
 
@@ -305,8 +357,8 @@ body {
 }
 
 /* QUIZ STYLES */
-.quiz-centered-container { width: 100%; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
-.quiz-question-card { width: 100%; background: #fff; padding: 50px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.08); border: 1px solid #f1f2f6; }
+.quiz-centered-container { width: 100%; height: 100%; margin: 0; display: flex; flex-direction: column; padding: 5px 0; box-sizing: border-box; }
+.quiz-question-card { width: 100%; flex: 1; background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid #f1f2f6; display: flex; flex-direction: column; overflow-y: auto; }
 .quiz-progress-bar { width: 100%; height: 6px; background: #f1f2f6; border-radius: 10px; margin-bottom: 25px; overflow: hidden; }
 .quiz-progress-fill { height: 100%; background: var(--accent-grad); transition: width 0.3s ease; }
 .quiz-q-text { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 30px; line-height: 1.5; }
@@ -375,12 +427,47 @@ body {
 .hint-btn { background: #fff; border: 1px solid #f39c12; color: #f39c12; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; font-family: var(--font-main); font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition:0.2s; margin-top: 5px; }
 .hint-btn:hover { background: #f39c12; color: white; }
 .hint-text-box { margin-top: 10px; background: #fff3cd; padding: 10px 15px; border-radius: 12px; color: #856404; font-size: 0.9rem; font-weight: 500; display: none; animation: slideDown 0.2s ease-out; border: 1px solid #ffeeba; }
-.vocab-layout { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-content: start; width: 100%; padding: 20px; }
-.vocab-item { background: #fff; border: 1px solid #f1f2f6; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s; }
+/* --- KELİME & FAVORİ LİSTESİ DÜZENİ (ORTALI) --- */
+.vocab-layout { 
+    display: grid; 
+    /* Sütunları içeriğe göre otomatik ayarla ve ortala */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    gap: 20px; 
+    width: 100%; 
+    padding: 10px;
+    justify-content: center; /* Grid öğelerini ortala */
+    align-content: start;
+}
+
+.vocab-item { 
+    background: #fff; 
+    border: 1px solid #f1f2f6; 
+    border-radius: 12px; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    text-align: center; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.03); 
+    transition: 0.2s; 
+    margin: 0 auto; /* Kartı kendi hücresinde ortala */
+    width: 100%;    /* Hücreyi doldur */
+}
+/* Liste modu (alt alta) için ortalama */
 .vocab-item:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-color: var(--accent); }
 .vocab-en { font-weight: 700; color: var(--accent); font-size: 1.1rem; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 8px;} 
 .vocab-tr { font-style: italic; color: #636e72; font-size: 1rem; }
-.unknown-list-item { font-size: 1.1rem; padding: 12px 0; border-bottom: 1px dashed #eee; color: #555; display: flex; align-items: center; }
+ .unknown-list-item { 
+    font-size: 1.1rem; 
+    padding: 15px 20px; 
+    border-bottom: 1px solid #f1f2f6; 
+    color: #555; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; /* İki uca yasla */
+    background: white;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
 .unknown-list-item strong { color: var(--primary); font-weight: 700; margin-right: 10px; font-size: 1.2rem; }
 .tts-small { cursor: pointer; font-size: 1.1em; color: #f39c12; transition: 0.2s; padding: 2px; border-radius: 50%; }
 .tts-small:hover { background: rgba(243, 156, 18, 0.1); transform: scale(1.2); }
@@ -617,40 +704,41 @@ body {
 .btn-complete { background: var(--success); color: white; }
 .btn-quiz { background: var(--accent); color: white; display: none; }
 
-/* --- ZARİF SİLME BUTONU (Reading & Liste İçin) --- */
+/* --- KESİN ÇÖZÜM: SİLME BUTONU GÖRÜNÜRLÜĞÜ --- */
 .book-card {
-    position: relative !important; /* Butonu köşeye sabitlemek için şart */
+    position: relative !important;
 }
 
 .delete-btn {
-    position: absolute;       /* Kartın içinde serbest hareket */
-    top: 5px;                 /* Üstten çok az boşluk */
-    right: 5px;               /* Sağdan çok az boşluk */
+    opacity: 1 !important;          /* GİZLİLİK İPTAL: Hep görünür */
+    visibility: visible !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
     
-    background: transparent;  /* Arka plan şeffaf (Kutu yok) */
-    color: #b2bec3;           /* Silik gri renk (Göze batmaz) */
-    border: none;             /* Çerçeve yok */
+    position: absolute;             /* Kartın içinde sabitle */
+    top: 5px;                       /* Üstten mesafe */
+    right: 5px;                     /* Sağdan mesafe */
     
-    font-size: 1.5rem;        /* Çarpı boyutu */
-    line-height: 1;
+    background: white;              /* Beyaz zemin */
+    color: #e74c3c;                 /* Kırmızı ikon */
+    border: 1px solid #e74c3c;      /* Kırmızı çerçeve */
+    
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;             /* Yuvarlak */
+    font-size: 1rem;
+    font-weight: bold;
+    z-index: 100;
     cursor: pointer;
-    
-    opacity: 0;               /* Başlangıçta GİZLİ */
-    transition: all 0.2s;     /* Yumuşak geçiş */
-    z-index: 50;
-    padding: 0 5px;
-}
-
-/* Bilgisayarda üzerine gelince (Hover) görünür ve kızarır */
-.book-card:hover .delete-btn {
-    opacity: 1;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .delete-btn:hover {
-    color: #e74c3c !important; /* Üzerine gelince KIPKIRMIZI olur */
-    transform: scale(1.2);     /* Hafif büyür */
+    background: #e74c3c;
+    color: white;
+    transform: scale(1.1);
 }
-
 /* --- MOBİL İÇİN ÖZEL AYAR --- */
 @media (max-width: 900px) {
     .delete-btn {
@@ -727,11 +815,8 @@ body {
     <button class="nav-btn" onclick="openWordMasterApp()" style="color:#f1c40f;">🎮 Word Master</button>
     <button class="nav-btn" onclick="openExternalGame('grammar.html', 'Grammar Practice')">🚀 Grammar Practice</button>
     <button class="nav-btn" onclick="openExternalGame('phrase-master.html', 'Phrase Master')">✨ Phrase Master</button>
-    
-   <div class="spacer"></div>
-
+    <div class="spacer"></div>
     <div style="height:1px; background:rgba(255,255,255,0.1); margin:10px 0; width:100%;"></div>
-
 <div id="adminSection">
         <button class="nav-btn" onclick="openAdmin()" style="color:#f1c40f; font-weight:700; width:100%;">
             ⚙️ Data Manager
@@ -762,10 +847,9 @@ body {
                 <div class="stat-pill">📖 Kelime: <strong id="liveWordCount">0</strong></div>
                 <div class="stat-pill">⏱️ Süre: <strong id="liveTimer">00:00</strong></div>
             </div>
-
-            <div id="headerTools" style="display:flex; gap:10px; align-items:center;">
-                <input id="myNoteTitleDisplay" type="text" style="display:none; border:none; border-bottom:1px solid #dfe6e9; text-align:center; font-family:var(--font-main);" onchange="saveNoteTitle(this.value)" placeholder="Başlık">
-                
+<div id="headerTools" style="display:flex; gap:10px; align-items:center;">
+                <button id="btnEditContent" onclick="openEditContent()" style="display:none; border:none; background:#f39c12; color:white; padding:5px 15px; border-radius:15px; font-size:0.8em; cursor:pointer; font-weight:bold;">✏️ DÜZENLE</button>
+                <input id="myNoteTitleDisplay" type="text" style="display:none; border:none; border-bottom:1px solid #dfe6e9; text-align:center; font-family:var(--font-main);" onchange="saveNoteTitle(this.value)" placeholder="Başlık">                         
                 <div id="notebookTools" class="notebook-tools">
                     <span style="font-size:0.8rem; color:#888;">Kalem:</span>
                     <input type="color" class="tool-select" value="#2c3e50" style="padding:0; height:30px; width:40px; border-radius:50%; border:none;" onchange="applyGlobalStyle('color', this.value)">
@@ -882,7 +966,45 @@ body {
  </div>
 </div>
 
-<script src="data.js"></script>
+<div class="modal-overlay" id="editContentModal" style="display:none; z-index:3000;">
+  <div class="modal" style="width:900px; max-width:95vw; height:90vh; display:flex; flex-direction:column; padding:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h3 style="margin:0; color:var(--primary);">✏️ İçerik Düzenleyici</h3>
+        <button onclick="document.getElementById('editContentModal').style.display='none'" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+    
+    <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:15px;">
+        <div>
+            <label style="font-weight:bold; color:#7f8c8d; display:block; margin-bottom:5px;">Başlık:</label>
+            <input type="text" id="editTitle" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-family:var(--font-main);">
+        </div>
+
+        <div style="display:flex; gap:15px; height:300px;">
+            <div style="flex:1; display:flex; flex-direction:column;">
+                <label style="font-weight:bold; color:#2980b9; margin-bottom:5px;">İngilizce Metin (HTML Destekli):</label>
+                <textarea id="editEn" style="flex:1; padding:10px; border:1px solid #ccc; border-radius:8px; font-family:monospace; resize:none;"></textarea>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column;">
+                <label style="font-weight:bold; color:#27ae60; margin-bottom:5px;">Türkçe Metin (HTML Destekli):</label>
+                <textarea id="editTr" style="flex:1; padding:10px; border:1px solid #ccc; border-radius:8px; font-family:monospace; resize:none;"></textarea>
+            </div>
+        </div>
+
+        <div style="flex:1; display:flex; flex-direction:column; min-height:200px;">
+            <label style="font-weight:bold; color:#e67e22; margin-bottom:5px;">Sorular (Format: Q1: Soru... A)... Correct: A):</label>
+            <textarea id="editQuestions" style="flex:1; padding:10px; border:1px solid #ccc; border-radius:8px; font-family:monospace; resize:none;" placeholder="Sorular burada düzenlenebilir..."></textarea>
+        </div>
+    </div>
+
+    <div style="margin-top:15px; display:flex; justify-content:flex-end; gap:10px;">
+        <button onclick="document.getElementById('editContentModal').style.display='none'" style="padding:10px 20px; border-radius:10px; border:none; cursor:pointer;">İptal</button>
+        <button onclick="saveEditedContent()" style="padding:10px 30px; background:var(--success); color:white; border-radius:10px; border:none; font-weight:bold; cursor:pointer;">💾 DEĞİŞİKLİKLERİ KAYDET</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js">
+</script>
 
 <script>
 /* --- ENGLISH PRO HUB MASTER SCRIPT (V35.1 STABLE & FIXED) --- */
@@ -1095,29 +1217,50 @@ window.onload = function() {
 };
 
 /* --- METİN PARÇALAMA & İŞLEME SİSTEMİ (DÜZELTİLDİ) --- */
-function paginateText(html, makeInteractive, charLimit = 950) {
+function paginateText(html, makeInteractive, charLimit = 15000) { 
+    // --- TEK PARÇA OKUMA MANTIĞI ---
+    // Limiti 15.000 yaptık. Bu, neredeyse tüm makaleleri tek sayfada tutar.
+    // <p> etiketleri artık sayfa bölücü değil, sadece alt satıra geçiren birer elementtir.
+    
     let tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
-    let fullText = tempDiv.innerHTML;
+    let fullText = tempDiv.innerHTML; // Tüm HTML içeriğini al
 
-    // Eğer metin kısaysa bölme
-    if (tempDiv.innerText.length < charLimit) {
+    // İçerik limitten kısaysa BÖLME, tek parça döndür.
+    if (fullText.length < charLimit) {
         return [makeInteractive ? processInteractiveText(fullText) : fullText];
     }
 
-    // Uzunsa, cümle veya paragraf sonlarından böl
-    let splitRegex = new RegExp(`.{1,${charLimit}}(\\s+|<\\/p>|<br>|[.!?])`, 'g');
-    let rawPages = fullText.match(splitRegex) || [fullText];
+    // Eğer çok çok uzun bir metinse (örn: bütün bir kitap), o zaman bölmeye çalış.
+    // Ancak bu sefer paragrafları kırmadan en yakın paragraf sonundan böl.
+    
     let pages = [];
+    let remainingText = fullText;
 
-    rawPages.forEach(chunk => {
-        if(chunk.trim().length > 10) {
-            pages.push(makeInteractive ? processInteractiveText(chunk) : chunk);
+    while (remainingText.length > 0) {
+        if (remainingText.length <= charLimit) {
+            pages.push(makeInteractive ? processInteractiveText(remainingText) : remainingText);
+            break;
         }
-    });
+
+        // Limite yakın bir yerden (paragraf sonu) bölmeye çalış
+        let splitIndex = remainingText.lastIndexOf("</p>", charLimit);
+        
+        // Eğer uygun bir </p> bulamazsa, boşluktan böl
+        if (splitIndex === -1) splitIndex = remainingText.lastIndexOf(" ", charLimit);
+        // Hiçbir şey bulamazsa mecburen limitten kes
+        if (splitIndex === -1) splitIndex = charLimit;
+        else splitIndex += 4; // </p> etiketini dahil et
+
+        let pageContent = remainingText.substring(0, splitIndex);
+        pages.push(makeInteractive ? processInteractiveText(pageContent) : pageContent);
+        
+        remainingText = remainingText.substring(splitIndex);
+    }
 
     return pages;
 }
+
 function processInteractiveText(html) {
     // Sadece metin düğümlerini bulup kelimelere ayırır, HTML taglerine dokunmaz
     const tempDiv = document.createElement('div');
@@ -1450,23 +1593,47 @@ function isFavorite(en) { return userFavorites.some(f => f.en === en); }
 
 /* 4. HARİCİ OYUNLAR */
 function openExternalGame(url, title) {
-    document.getElementById('libraryGrid').style.display = 'none'; 
-    document.getElementById('libraryHeader').style.display = 'none'; 
-    document.getElementById('analyticsView').style.display = 'none'; 
-    document.getElementById('openBookView').style.display = 'none';
-    
-    // Okuma sayacı açıksa durdur
+    // 1. Arka planı temizle (Çakışmayı önlemek için)
     stopReadingTimer();
 
-    const view = document.getElementById('externalAppView'); 
-    const frame = document.getElementById('appFrame'); 
+    // 2. Oyun Alanı Elementini Bul
+    const view = document.getElementById('externalAppView');
     const titleEl = document.getElementById('appTitle');
-    
-    if(titleEl) titleEl.innerText = title; 
-    if(frame) frame.src = url; 
-    view.style.display = 'flex';
-}
 
+    if(titleEl) titleEl.innerText = title;
+
+    if(view) {
+        // --- KRİTİK HAMLE: KAPSAYICIDAN KURTARMA ---
+        // Elementi bulunduğu kutudan (workbook-area) çıkarıp, 
+        // HTML'in en dış katmanına (Body'nin sonuna) taşıyoruz.
+        // Bu işlem, z-index ve overflow sorunlarını %100 çözer.
+        document.body.appendChild(view);
+
+        // --- IFRAME YENİLEME ---
+        // Eski iframe'i silip yenisini oluşturarak yüklemeyi tetikle
+        const oldFrame = document.getElementById('appFrame');
+        if(oldFrame) oldFrame.remove();
+
+        const newFrame = document.createElement('iframe');
+        newFrame.id = 'appFrame';
+        newFrame.style.cssText = "flex:1; width:100%; height:100%; border:none; background:#ffffff;";
+        newFrame.src = url;
+
+        view.appendChild(newFrame);
+
+        // --- GÖRÜNÜM AYARLARI ---
+        // Ekranı tam kapla ve en öne geç
+        view.style.display = 'flex';
+        view.style.flexDirection = 'column';
+        view.style.position = 'fixed';    // Ekrana sabitle
+        view.style.top = '0';
+        view.style.left = '0';
+        view.style.width = '100vw';       // Genişlik %100
+        view.style.height = '100vh';      // Yükseklik %100
+        view.style.zIndex = '2147483647'; // Maksimum Z-Index değeri
+        view.style.background = '#ffffff'; // Arka plan beyaz
+    }
+}
 function closeExternalApp() {
     // Varsa zamanlayıcıyı garanti durdur
     if(typeof externalTimerInterval !== 'undefined') clearInterval(externalTimerInterval);
@@ -1604,9 +1771,9 @@ function renderWordMasterGame(pL, pR) {
         pL.style.flex = "2"; pL.style.borderRight = "none"; pL.style.alignItems = "center"; pL.style.justifyContent = "center";
         pR.style.display = "none";
         
+     // DÜZELTME: Sayaç kaldırıldı, margin: 0 auto ile ortalandı
         pL.innerHTML = `
-            <div style="width:100%; max-width:500px; display:flex; flex-direction:column; align-items:center;">
-                <div class="wm-count-display">${wmMode === 'review' ? 'Tekrar' : 'Öğrenme'} | Kalan: ${gameQueue.length - gameIndex}</div>
+            <div style="width:100%; max-width:500px; margin: 0 auto; display:flex; flex-direction:column; align-items:center;">
                 <div class="wm-card-container" onclick="this.classList.toggle('wm-flipped')">
                     <div class="wm-flip-inner">
                         <div class="wm-card-front">
@@ -1673,10 +1840,14 @@ function openBook(i) {
     document.getElementById('openBookView').style.display='flex'; 
     document.getElementById('bookHeaderTitle').innerText=i.title;
     
-    // Araçları Gizle
-    const toolIds = ['myNoteTitleDisplay','langToggle','addPageBtn','flashcardBtn','ttsControls','ttsSpeed','liveStats','notebookTools'];
+  // Araçları Gizle (Edit butonu dahil hepsini önce gizle)
+    const toolIds = ['btnEditContent', 'myNoteTitleDisplay','langToggle','addPageBtn','flashcardBtn','ttsControls','ttsSpeed','liveStats','notebookTools'];
     toolIds.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
-
+  // Reading, Question veya Grammar ise Edit butonunu aç
+    if(currentCategory === 'reading' || currentCategory === 'question' || currentCategory === 'grammar') {
+        const btnEdit = document.getElementById('btnEditContent');
+        if(btnEdit) btnEdit.style.display = 'block';
+    }
     // Okları Göster
     document.querySelector('.nav-arrow.prev').style.display='flex'; 
     document.querySelector('.nav-arrow.next').style.display='flex';
@@ -1719,9 +1890,17 @@ if(currentCategory==='reading') {
         
         startReadingTimer(); 
     }
-    else if(currentCategory==='grammar') {
+else if(currentCategory==='grammar') {
         document.getElementById('notebookTools').style.display='flex'; 
         document.getElementById('liveStats').style.display='flex';
+        
+        // --- GRAMER İÇERİĞİNİ YÜKLE (GÖRÜNÜRLÜK DÜZELTMESİ) ---
+        // İçeriği tek parça sayfa olarak diziye atıyoruz.
+        // Böylece renderSpread fonksiyonu boş sayfa yerine bu içeriği gösterir.
+        let rawContent = i.content || i.enText || "<p>İçerik hazırlanıyor...</p>";
+        bookChunksEn = [rawContent];
+        bookChunksTr = []; // Çeviri sekmesi boş kalabilir
+        
         startReadingTimer(); 
     }
     else if(currentCategory==='question') {
@@ -1738,30 +1917,62 @@ if(currentCategory==='reading') {
     setTimeout(() => { renderSpread(); }, 50);
 }
 /* --- GÜNCELLENMİŞ GÖRÜNÜM YÖNETİMİ (SABİT ALT MENÜLÜ) --- */
+
+
 function renderSpread() {
     if ('speechSynthesis' in window) speechSynthesis.cancel();
-    const pL=document.getElementById('pageLeft');
-    const pR=document.getElementById('pageRight');
     
-    // Temizlik
-    pL.innerHTML=""; pR.innerHTML="";
+    const pL = document.getElementById('pageLeft');
+    const pR = document.getElementById('pageRight');
     
-    document.querySelector('.book-spread').classList.remove('split-mode');
-    pL.style.display = "flex"; pL.style.width = "100%"; 
-    pR.style.display = "none"; 
-
-    // --- YENİ: Alt Barı Bul ve Başlangıçta Gizle ---
+    // --- 1. TAM DOM TEMİZLİĞİ (ZORUNLU) ---
+    pL.innerHTML = ""; 
+    pL.className = ""; // Tüm eski sınıfları (single-page vb.) sil
+    if(pR) { pR.innerHTML = ""; pR.style.display = "none"; }
+    
+    // --- 2. ALT BAR YÖNETİMİ ---
     const bottomBar = document.getElementById('fixedBottomBar');
     if(bottomBar) bottomBar.style.display = 'none';
 
-    // 1. OYUN VE KART MODLARI (Reading Değilse Çık)
-    if(currentCategory === 'wordmaster') { renderWordMasterGame(pL, pR); return; }
-    if(currentCategory === 'unknowns_flashcard' || currentCategory === 'favorites_flashcard') { renderUnknownFlashcards(pL, pR); return; }
-    if(currentCategory==='question'){ 
-        pL.style.alignItems = "center"; pL.style.justifyContent = "center";
-        renderQuizSingleMode(pL); return; 
+    // --- 3. MODA GÖRE KONTEYNER AYARLARI ---
+    
+    // A) QUESTION (TEST) MODU - Tek Ekran, Kağıt Efekti YOK
+    if(currentCategory === 'question') {
+        pL.style.display = "block";
+        pL.style.width = "100%";
+        pL.style.maxWidth = "100%"; // Tam genişlik
+        pL.style.margin = "0";
+        pL.style.padding = "0"; // İç boşlukları sıfırla
+        pL.style.background = "transparent"; // Arka plan yok
+        pL.style.boxShadow = "none"; // Gölge yok
+        
+        // Testi Render Et
+        renderQuizSingleMode(pL); 
+        return; 
     }
 
+    // B) OYUNLAR (Word Master / Flashcard)
+    if(currentCategory === 'wordmaster') { 
+        pL.classList.add('single-page'); // Gerekirse sınıf ekle
+        renderWordMasterGame(pL, pR); return; 
+    }
+    if(currentCategory === 'unknowns_flashcard' || currentCategory === 'favorites_flashcard') { 
+        pL.classList.add('single-page');
+        renderUnknownFlashcards(pL, pR); return; 
+    }
+
+    // C) READING ve GRAMMAR (Standart Kağıt Görünümü)
+    // Bu noktaya geldiyse Reading veya Grammar'dır.
+    // .single-page sınıfını TEKRAR ekle.
+    pL.classList.add('single-page'); 
+    pL.style.display = "block";
+    
+    // Diğer stil ayarlarını sıfırla (Question modundan kalma riskine karşı)
+    pL.style.maxWidth = ""; 
+    pL.style.margin = "";
+    pL.style.padding = ""; 
+    pL.style.background = ""; 
+    pL.style.boxShadow = "";
     // 2. SAYFALAMA İÇERİĞİNİ HAZIRLA
     let pages = [];
 
@@ -1828,21 +2039,60 @@ function renderSpread() {
 
 // Butonun rengini ve yazısını ayarlayan yardımcı fonksiyon
 function updateCompleteButton() {
-    const btn = document.getElementById('btnFixedComplete');
-    if(!btn) return;
+    const btnComp = document.getElementById('btnFixedComplete');
+    const btnQuiz = document.getElementById('btnFixedQuiz');
     
-    if (currentBook.completed) {
-        btn.innerHTML = "🎉 TAMAMLANDI";
-        btn.style.background = "transparent";
-        btn.style.border = "2px solid #27ae60";
-        btn.style.color = "#27ae60";
-    } else {
-        btn.innerHTML = "✅ OKUMAYI TAMAMLA";
-        btn.style.background = "#27ae60";
-        btn.style.color = "white";
-        btn.style.border = "none";
+    if(!btnComp) return;
+
+    // Quiz butonunu her zaman gizle (Tek buton kuralı)
+    if(btnQuiz) btnQuiz.style.display = 'none';
+
+    // Bağlı test var mı kontrol et
+    const currentTitleClean = currentBook.title.trim().toLowerCase();
+    const linkedQuiz = contentData.find(q => q.category === 'question' && q.title.trim().toLowerCase() === currentTitleClean);
+
+    // SENARYO 1: Testi Var
+    if (linkedQuiz) {
+        if (linkedQuiz.completed) {
+            // Hem okuma hem test bitmiş
+            btnComp.innerHTML = "🎉 TEBRİKLER (Test Tamamlandı)";
+            btnComp.className = "action-btn-fixed btn-complete"; // Yeşil
+            btnComp.disabled = true;
+            btnComp.style.opacity = "0.7";
+        } else {
+            // Okuma bitti veya bitmedi ama sırada Test var
+            btnComp.innerHTML = "📝 OKUMAYI TAMAMLA VE TESTE GEÇ";
+            btnComp.className = "action-btn-fixed";
+            btnComp.style.background = "#e67e22"; // Turuncu (Action)
+            btnComp.style.color = "white";
+            btnComp.onclick = function() { handleCompleteAndQuiz(linkedQuiz.id); };
+        }
+    } 
+    // SENARYO 2: Testi Yok (Sadece Okuma)
+    else {
+        if (currentBook.completed) {
+            btnComp.innerHTML = "✅ OKUMA TAMAMLANDI";
+            btnComp.className = "action-btn-fixed btn-complete";
+            btnComp.onclick = null; // İşlevsiz
+        } else {
+            btnComp.innerHTML = "✅ OKUMAYI TAMAMLA";
+            btnComp.className = "action-btn-fixed btn-complete";
+            btnComp.onclick = function() { markAsCompleted(); };
+        }
     }
-}  
+    
+    // Butonu göster
+    btnComp.style.display = 'flex';
+}
+
+// YENİ GEÇİŞ FONKSİYONU
+function handleCompleteAndQuiz(quizId) {
+    // 1. Reading ilerlemesini kaydet (Ama 'completed' yapma, test bitince olacak)
+    saveReadingProgress();
+    
+    // 2. Geçiş Yap
+    switchFromReadingToQuiz(quizId);
+} 
 
 function turnPage(d){ 
     let step = (d > 0) ? 1 : -1;
@@ -1881,24 +2131,33 @@ function toggleLang(){
 
 function switchFromReadingToQuiz(quizId) {
     saveReadingProgress();
+
+    // 1. Önce ID ile aramayı dene
     let targetQuiz = contentData.find(x => x.id == quizId);
-    
-    if(targetQuiz) {
+
+    // 2. ID ile bulunamazsa, Başlık (Title) ile aramayı dene (Yedek Plan)
+    if (!targetQuiz && currentBook) {
+        const cleanTitle = currentBook.title.trim();
+        targetQuiz = contentData.find(x => x.category === 'question' && x.title.trim() === cleanTitle);
+    }
+
+    if (targetQuiz) {
+        stopReadingTimer();
         currentCategory = 'question';
-        closeBook(); 
-        setTimeout(() => { 
-            // Menü butonunu aktif yap
-            document.querySelectorAll('.nav-btn').forEach(b=>{ 
-                b.classList.remove('active'); 
-                if(b.getAttribute('onclick') && b.getAttribute('onclick').includes('question')) b.classList.add('active'); 
-            });
-            openBook(targetQuiz); 
-        }, 100);
+        
+        // Menü butonunu güncelle
+        document.querySelectorAll('.nav-btn').forEach(b => {
+            b.classList.remove('active');
+            if(b.getAttribute('onclick') && b.getAttribute('onclick').includes('question')) b.classList.add('active');
+        });
+
+        // Ekranı kapatmadan direkt testi aç (Hata önleyici)
+        openBook(targetQuiz);
+        showToast("Test Başlatılıyor...");
     } else {
-        alert("İlgili test verisi bulunamadı! (Başlıklar birebir aynı olmalı)");
+        alert("Hata: İlgili test bulunamadı.\nReading başlığı (" + (currentBook ? currentBook.title : 'Bilinmiyor') + ") ile Test başlığının AYNI olduğundan emin olun.");
     }
 }
-
 function markAsCompleted() { 
     if(!currentBook) return; 
 
@@ -1948,15 +2207,16 @@ function renderUnknownFlashcards(pL, pR) {
     const w = list[fcIndex];
     let favClass = isFavorite(w.en) ? 'active' : '';
 
-    pL.style.flex = "2"; pL.style.borderRight = "none"; pL.style.alignItems = "center"; pL.style.justifyContent = "center";
+    // DÜZELTME: Flex ve Center ayarları temizlendi, manuel margin ile ortalama sağlandı
+    pL.style.display = "block"; // Flex yerine Block yapısı (Margin auto çalışması için)
     pR.style.display = "none";
     
     let btnLeftText = isFavMode ? "★ Çıkar" : "✅ Öğrendim (Sil)";
     let hintHtml = w.hint ? `<div class="hint-section" style="margin:5px 0;"><button onclick="event.stopPropagation(); toggleHint()" class="hint-btn">💡 İpucu</button><div id="hintText" class="hint-text-box" style="position:absolute;bottom:60px;left:20px;right:20px;z-index:20;background:rgba(0,0,0,0.8);color:#fff;display:none;">${w.hint}</div></div>` : `<div class="hint-section"><button onclick="event.stopPropagation(); addHint()" class="hint-btn">➕ İpucu Ekle</button></div>`;
 
+    // DÜZELTME: margin: 0 auto eklendi, wm-count-display (sayaç) satırı silindi
     pL.innerHTML = `
-        <div style="width:100%; max-width:500px; display:flex; flex-direction:column; align-items:center;">
-            <div class="wm-count-display">${isFavMode ? 'Favori' : 'Bilinmeyen'}: ${fcIndex + 1} / ${list.length}</div>
+        <div style="width:100%; max-width:500px; margin: 0 auto; display:flex; flex-direction:column; align-items:center;">
             <div class="wm-card-container" onclick="this.classList.toggle('wm-flipped')">
                 <div class="wm-flip-inner">
                     <div class="wm-card-front">
@@ -2063,14 +2323,25 @@ function finishQuizSingleMode(container) {
     let score = Math.round((correct/qs.length)*100);
     const earnedPoints = correct * 15; 
 
+
+// Reading başlığı ile eşleşen okuma parçasını bul
+    const relatedReading = contentData.find(r => r.category === 'reading' && r.title.trim() === currentBook.title.trim());
+
     if (!currentBook.completed) {
         currentBook.completed = true;
         trackStat('quizzesTaken');
         logActivity('quiz', currentBook.title, `Quiz: ${correct}D / ${wrong}Y`, currentQuizTime, earnedPoints);
+        
+        // --- KRİTİK: Test bittiyse Reading de bitti sayılır ---
+        if(relatedReading) {
+            relatedReading.completed = true;
+            trackStat('booksRead'); // Reading istatistiğini şimdi artır
+            // Opsiyonel: Reading puanı da verilebilir
+        }
+        showToast("Test ve Okuma Tamamlandı! +Puan");
     } else {
         logActivity('quiz', currentBook.title, `Tekrar: ${correct}D / ${wrong}Y`, currentQuizTime, 0);
     }
-    
     currentBook.stats = { readingTime: 0, quizTime: currentQuizTime, score: score };
     saveToDB();
     userStats.totalCorrect = (userStats.totalCorrect || 0) + correct; 
@@ -2692,206 +2963,184 @@ function exportData() {
     document.body.removeChild(a); 
     showToast("Güncel Veriler Yedeklendi!");
 }
-    
-function importData(input) {
-    const file = input.files[0]; if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const json = JSON.parse(e.target.result);
-            
-            // Eğer giriş yapmış bir kullanıcı yoksa işlem yapma
-            if(!currentUser || !masterDB[currentUser]) {
-                alert("Lütfen önce giriş yapın.");
-                return;
-            }
 
-            // Verileri Aktif Kullanıcıya İşle
-            const d = masterDB[currentUser].data;
-            
-            if(json.data) d.contentData = JSON.parse(json.data);
-            if(json.stats) d.userStats = JSON.parse(json.stats);
-            if(json.unknowns) d.userUnknownWords = JSON.parse(json.unknowns);
-            if(json.knowns) d.userKnownVocabulary = JSON.parse(json.knowns);
-            if(json.favorites) d.userFavorites = JSON.parse(json.favorites);
-            if(json.activityLog) d.userActivityLog = JSON.parse(json.activityLog);
+/* --- V39.0 TEXT-STREAM TTS MOTORU (SES GARANTİLİ) --- */
+/* Yöntem: DOM yapısını yoksay -> Saf metni al -> Parçala -> Oku */
 
-            saveMasterDB(); // Veritabanını güncelle
-            showToast("Veriler Başarıyla Yüklendi!");
-            
-            // Sayfayı yenile (Otomatik giriş sayesinde şifre sormayacak)
-            setTimeout(() => location.reload(), 1000);
-            
-        } catch(err) { 
-            console.error(err);
-            showToast("Dosya formatı hatalı!", true); 
-        }
-    }; 
-    reader.readAsText(file);
-}
+let ttsQueue = [];
+let ttsCurrentIndex = 0;
+let isTTSActive = false;
+let ttsWaitTimer = null;
+let globalSpanCounter = 0; // Highlight senkronizasyonu için
 
-function resetProgress() {
-    if(!confirm("TAM SIFIRLAMA YAPILSIN MI?\n\n- Okunan kitap işaretleri kalkacak.\n- Puanlar ve istatistikler silinecek.\n- Kelime listeleri (Bildiğim/Bilmediğim) temizlenecek.\n\n(Ders içerikleri SİLİNMEYECEK, sadece başa döneceksin.)")) return;
-    
-    // 1. İstatistikleri Sıfırla
-    userStats = { booksRead:0, pagesTurned:0, quizzesTaken:0, wordsAdded:0, notesTaken:0, totalCorrect:0, totalWrong:0, dailyActivity: {} };
-    userActivityLog = [];
-    
-    // 2. Kelime Listelerini ve Favorileri Temizle (Tamamen başa dönmek için)
-    userUnknownWords = [];
-    userKnownVocabulary = [];
-    userFavorites = [];
-
-    // 3. İçeriklerin "Okundu" Durumunu Kesin Olarak Kaldır
-    for (let i = 0; i < contentData.length; i++) {
-        contentData[i].completed = false;       // Yeşil tiki kaldır
-        contentData[i].readingDuration = 0;     // Süreyi sıfırla
-        if(contentData[i].stats) delete contentData[i].stats; // Test sonuçlarını sil
-    }
-
-    // 4. Veritabanına Kaydet
-    saveToDB();
-    
-    showToast("Her şey sıfırlandı! Başarılar..."); 
-    setTimeout(() => location.reload(), 1000);
-}
-function applyGlobalStyle(type, val) {
-    if(type === 'color') currentPenStyle.color = val;
-    if(type === 'size') currentPenStyle.size = val;
-    const pages = document.querySelectorAll('.notebook-paper');
-    pages.forEach(p => {
-        if(type === 'color') p.style.color = val;
-        if(type === 'size') {
-            p.style.fontSize = val + 'px';
-            const lh = val * 1.5;
-            p.style.lineHeight = lh + 'px';
-            p.style.backgroundSize = `100% ${lh}px`;
-        }
-    });
-}
-function applyStyleToElement(el) {
-    el.style.color = currentPenStyle.color;
-    el.style.fontSize = currentPenStyle.size + 'px';
-    const lh = currentPenStyle.size * 1.5;
-    el.style.lineHeight = lh + 'px';
-    el.style.backgroundSize = `100% ${lh}px`;
-}
-/* --- KUSURSUZ TTS MOTORU (V35.3 FINAL FIX) --- */
-let ttsAutoPlay = false;
+// ⛔ DURAKLAMA SÜRELERİ
+const PAUSE_COMMA = 100;   // 0.1 Saniye
+const PAUSE_DOT = 300;    // 0.3 Saniye
 
 function handleTTS(action) {
-    if (!('speechSynthesis' in window)) return alert("Tarayıcınız seslendirmeyi desteklemiyor.");
+    if (!('speechSynthesis' in window)) return alert("Tarayıcı desteklemiyor.");
     const pauseBtn = document.getElementById('ttsPauseBtn');
-    const container = document.getElementById('pageLeft');
 
-    // --- 1. BAŞLAT (RESTART) ---
-    if (action === 'restart') {
-        speechSynthesis.cancel();
-        ttsAutoPlay = true;
-
-        // A. Kelimeleri Topla (DOM'dan)
-        const wordSpans = Array.from(container.querySelectorAll('.interactive-word'));
-        
-        if (wordSpans.length === 0) {
-            // Eğer span yoksa (Düz metin geldiyse), metni direkt oku ama vurgulama yapma
-            let rawText = container.innerText.replace(/✔ KONUYU TAMAMLA|✅ OKUMAYI TAMAMLA|🔄 Tekrar Okudum|🧠 İLGİLİ TESTİ|↺ İLGİLİ TESTİ/gi, "").trim();
-            if(!rawText) return;
-            ttsObj = new SpeechSynthesisUtterance(rawText);
+    // 1. DURAKLAT / DEVAM ET
+    if (action === 'pause') {
+        if (isTTSActive) {
+            window.speechSynthesis.cancel();
+            clearTimeout(ttsWaitTimer);
+            isTTSActive = false;
+            if(pauseBtn) { pauseBtn.innerHTML = "▶"; pauseBtn.classList.add('paused'); }
         } else {
-            // Spanlardan temiz metin oluştur (Böylece okuma ve vurgu senkronize olur)
-            let textToRead = wordSpans.map(span => span.innerText).join(" "); // Boşlukla birleştir
-            ttsObj = new SpeechSynthesisUtterance(textToRead);
+            isTTSActive = true;
+            if(pauseBtn) { pauseBtn.innerHTML = "⏸"; pauseBtn.classList.remove('paused'); }
+            forcePlayNextChunk();
         }
+        return;
+    }
 
-        ttsObj.lang = isTrMode ? 'tr-TR' : 'en-US';
-        ttsObj.rate = parseFloat(document.getElementById('ttsSpeed').value) || 0.9;
+    // 2. YENİDEN BAŞLAT
+    if (action === 'restart') {
+        // Sistemi Sıfırla
+        window.speechSynthesis.cancel();
+        clearTimeout(ttsWaitTimer);
+        ttsQueue = [];
+        ttsCurrentIndex = 0;
+        isTTSActive = true;
+        globalSpanCounter = 0; // Highlight sayacını sıfırla
 
-        // B. Vurgulama Mantığı (Kelime Kelime)
-        let currentSpanIndex = 0;
+        if(pauseBtn) { pauseBtn.innerHTML = "⏸"; pauseBtn.classList.remove('paused'); }
 
-        ttsObj.onboundary = function(event) {
-            if (event.name === 'word') {
-                // Temizlik
-                const active = container.querySelector('.highlight-word');
-                if (active) {
-                    active.classList.remove('highlight-word');
-                    active.style.backgroundColor = ""; 
-                    active.style.color = "";
-                }
+        const container = document.getElementById('pageLeft');
+        
+        // A) METNİ AL VE TEMİZLE
+        // Buton yazılarını ve gereksiz etiketleri metinden çıkar
+        let rawText = container.innerText
+            .replace(/✔ KONUYU TAMAMLA|✅ OKUMAYI TAMAMLA|🔄 Tekrar Okudum|🧠 İLGİLİ TESTİ|↺ İLGİLİ TESTİ|🔊|★/gi, "")
+            .replace(/\s+/g, " ") // Çoklu boşlukları tek boşluğa indir
+            .trim();
 
-                // Sıradaki kelimeyi boya
-                if (currentSpanIndex < wordSpans.length) {
-                    const span = wordSpans[currentSpanIndex];
-                    
-                    // CSS Class ile değil, doğrudan stil ile boya (Garanti olsun)
-                    span.classList.add('highlight-word');
-                    span.style.backgroundColor = "#f1c40f"; 
-                    span.style.color = "#000";
-                    span.style.borderRadius = "3px";
-                    span.style.padding = "0 2px";
-                    
-                    // Otomatik Kaydırma (Okunan yere git)
-                    // span.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+        if (!rawText) return alert("Okunacak metin bulunamadı!");
 
-                    currentSpanIndex++;
-                }
-            }
-        };
+        // B) METNİ PARÇALA (Regex: Noktalama işaretlerini ayırıcı olarak kullan ama onları da tut)
+        // Bu regex metni şuna böler: ["Hello", ",", " how are you", "?", " I am fine", ".", ""]
+        let parts = rawText.split(/([,;:.?!])/g);
 
-        ttsObj.onend = function() {
-            // Temizlik
-            wordSpans.forEach(span => {
-                span.classList.remove('highlight-word');
-                span.style.backgroundColor = ""; // Stili sıfırla
-                span.style.color = "";
-            });
-
-            // Otomatik Sayfa Çevirme
-            if(ttsAutoPlay) {
-                let totalPages = 1;
-                // Sayfa sayısını doğru modülden al
-                if(currentCategory === 'reading') totalPages = Math.max(1, isTrMode ? bookChunksTr.length : bookChunksEn.length);
-                else {
-                      // Diğer kategorilerde (Vocab) sayfa sayısını hesapla
-                      const pNL = document.getElementById('pageNumL');
-                      if(pNL && pNL.innerText.includes('/')) totalPages = parseInt(pNL.innerText.split('/')[1]);
-                }
-
-                if (currentCategory === 'reading' && pageIndex < totalPages - 1) {
-                    turnPage(1);
-                    setTimeout(() => handleTTS('restart'), 700);
-                } else {
-                    ttsAutoPlay = false;
-                    if(pauseBtn) { pauseBtn.innerHTML = "⏸"; pauseBtn.classList.remove('paused'); }
+        // C) KUYRUĞU OLUŞTUR
+        let tempText = "";
+        
+        for (let i = 0; i < parts.length; i++) {
+            let part = parts[i];
+            
+            // Eğer bu parça bir noktalama işaretiyse
+            if ([',', ';', '.', '?', '!', ':'].includes(part)) {
+                // Hangi duraklama?
+                let delay = ['.', '?', '!', ':'].includes(part) ? PAUSE_DOT : PAUSE_COMMA;
+                
+                // Tamponda metin varsa işareti ona ekle ve kuyruğa at
+                if (tempText.trim()) {
+                    ttsQueue.push({
+                        text: tempText + part, 
+                        delay: delay
+                    });
+                    tempText = ""; // Tamponu boşalt
                 }
             } else {
-                if(pauseBtn) { pauseBtn.innerHTML = "⏸"; pauseBtn.classList.remove('paused'); }
+                // Metinse tampona ekle
+                tempText += part;
             }
-        };
-
-        speechSynthesis.speak(ttsObj);
+        }
         
-        if(pauseBtn) {
-            pauseBtn.innerHTML = "⏸";
-            pauseBtn.classList.remove('paused');
+        // Kalan son parça varsa ekle (Noktalama yoksa)
+        if (tempText.trim()) {
+            ttsQueue.push({ text: tempText, delay: 0 });
         }
-    } 
-    // --- 2. DURAKLAT / DEVAM ET ---
-    else if (action === 'pause') {
-        if (speechSynthesis.paused) {
-            speechSynthesis.resume();
-            pauseBtn.innerHTML = "⏸";
-            pauseBtn.classList.remove('paused');
-        } else if (speechSynthesis.speaking) {
-            speechSynthesis.pause();
-            ttsAutoPlay = false; 
-            pauseBtn.innerHTML = "▶";
-            pauseBtn.classList.add('paused');
-        } else {
-            handleTTS('restart');
-        }
+
+        // Okumayı Tetikle
+        forcePlayNextChunk();
     }
 }
+
+function forcePlayNextChunk() {
+    if (!isTTSActive) return;
+
+    // Kuyruk Bitti mi?
+    if (ttsCurrentIndex >= ttsQueue.length) {
+        isTTSActive = false;
+        const pauseBtn = document.getElementById('ttsPauseBtn');
+        if(pauseBtn) { pauseBtn.innerHTML = "▶"; pauseBtn.classList.add('paused'); }
+        // Highlight temizle
+        document.querySelectorAll('.highlight-word').forEach(el => {
+            el.classList.remove('highlight-word');
+            el.style.backgroundColor = ""; el.style.color = "";
+        });
+        return;
+    }
+
+    const item = ttsQueue[ttsCurrentIndex];
+    if (!item || !item.text) { 
+        ttsCurrentIndex++; 
+        forcePlayNextChunk(); 
+        return; 
+    }
+
+    const u = new SpeechSynthesisUtterance(item.text);
+
+    // AYARLAR
+    const speedEl = document.getElementById('ttsSpeed');
+    u.rate = speedEl ? parseFloat(speedEl.value) : 0.9;
+    u.lang = (typeof isTrMode !== 'undefined' && isTrMode) ? 'tr-TR' : 'en-US';
+
+    // --- BASİTLEŞTİRİLMİŞ HIGHLIGHT SİSTEMİ ---
+    // DOM eşleştirmesi hataya açık olduğu için, sırayla gidiyoruz.
+    // Metin okunurken sayfadaki 'interactive-word' spanlarını sırasıyla boyar.
+    const allSpans = document.getElementById('pageLeft').querySelectorAll('.interactive-word');
+    
+    u.onboundary = (e) => {
+        if (e.name === 'word') {
+            // Eskileri temizle
+            document.querySelectorAll('.highlight-word').forEach(el => {
+                el.classList.remove('highlight-word');
+                el.style.backgroundColor = ""; el.style.color = "";
+            });
+
+            // Global sayacı kullanarak sıradaki span'ı bul
+            if (globalSpanCounter < allSpans.length) {
+                let s = allSpans[globalSpanCounter];
+                
+                // Basit bir kontrol: Okunan kelime ile span içeriği uyuşuyor mu? (Opsiyonel ama güvenli)
+                // Şimdilik sadece sırayla gidiyoruz, bu en güvenli yöntemdir.
+                
+                s.classList.add('highlight-word');
+                s.style.backgroundColor = "#f1c40f"; 
+                s.style.color = "#000";
+                
+                // Görüş alanına getir
+                s.scrollIntoView({behavior: "smooth", block: "center"});
+                
+                globalSpanCounter++;
+            }
+        }
+    };
+
+    // --- ZORUNLU BEKLEME ---
+    u.onend = () => {
+        if (!isTTSActive) return;
+
+        // Okuma bitti. Belirlenen süre kadar BEKLE.
+        let wait = item.delay || 50;
+
+        ttsWaitTimer = setTimeout(() => {
+            ttsCurrentIndex++;
+            forcePlayNextChunk();
+        }, wait);
+    };
+
+    u.onerror = (e) => {
+        console.log("TTS Error, skipping...", e);
+        ttsWaitTimer = setTimeout(() => { ttsCurrentIndex++; forcePlayNextChunk(); }, 100);
+    };
+
+    window.speechSynthesis.speak(u);
+}
+
 function getFormattedTime(seconds) { const m = Math.floor(seconds / 60); const s = Math.round(seconds % 60); return `${m}dk ${s}sn`; }
 /* --- EKSİK FONKSİYON DÜZELTMESİ (ADMIN) --- */
 function openAdmin() {
@@ -3104,6 +3353,195 @@ function exportSmartTXT() {
     document.body.removeChild(a);
         showToast(`${readings.length} adet set başarıyla dışa aktarıldı!`);
 }
+/* --- EKSİK OLAN IMPORT FONKSİYONU --- */
+/* --- DÜZENLEME FONKSİYONLARI --- */
+function openEditContent() {
+    if(!currentBook) return;
+    
+    document.getElementById('editTitle').value = currentBook.title;
+    document.getElementById('editEn').value = currentBook.enText || (currentBook.content || "");
+    document.getElementById('editTr').value = currentBook.trText || "";
+    
+    // Soruları Metne Çevir (Parse)
+    let qText = "";
+    if(currentBook.questions && currentBook.questions.length > 0) {
+        currentBook.questions.forEach((q, i) => {
+            qText += `Q${i+1}: ${q.text}\n`;
+            q.options.forEach(opt => qText += `${opt}\n`);
+            qText += `Correct: ${q.correct}\n\n`;
+        });
+    } else {
+        // Eğer reading içindeysek ama soruları başka bir objede tutuyorsak onu bul
+        let linkedQuiz = contentData.find(q => q.category === 'question' && q.title.trim() === currentBook.title.trim());
+        if(linkedQuiz && linkedQuiz.questions) {
+            linkedQuiz.questions.forEach((q, i) => {
+                qText += `Q${i+1}: ${q.text}\n`;
+                q.options.forEach(opt => qText += `${opt}\n`);
+                qText += `Correct: ${q.correct}\n\n`;
+            });
+        }
+    }
+    document.getElementById('editQuestions').value = qText;
+    
+    document.getElementById('editContentModal').style.display = 'flex';
+}
+
+function saveEditedContent() {
+    if(!currentBook) return;
+    
+    // 1. Temel Verileri Güncelle
+    currentBook.title = document.getElementById('editTitle').value;
+    currentBook.enText = document.getElementById('editEn').value;
+    currentBook.trText = document.getElementById('editTr').value;
+    currentBook.content = currentBook.enText; // İçerik uyumluluğu için
+    
+    // 2. Soruları Geri Dönüştür (Reverse Parse)
+    let qRaw = document.getElementById('editQuestions').value.trim();
+    let newQuestions = [];
+    
+    if(qRaw) {
+        let qBlocks = qRaw.split(/Q\d+:/).slice(1);
+        qBlocks.forEach(b => {
+            let lines = b.trim().split('\n');
+            let qt = lines[0].trim();
+            let op = [];
+            let cor = "A";
+            lines.forEach(x => {
+                x = x.trim();
+                if(/^[A-D]\)/.test(x)) op.push(x);
+                if(x.toLowerCase().startsWith('correct:')) cor = x.split(':')[1].trim().toUpperCase();
+            });
+            if(qt) newQuestions.push({text: qt, options: op, correct: cor});
+        });
+    }
+
+    // 3. Soruları Kaydet (Reading içindeyse veya Question ise)
+    if(currentCategory === 'question') {
+        currentBook.questions = newQuestions;
+    } else {
+        // Reading modundaysak, bağlı olan Quiz'i bul ve güncelle
+        let linkedQuiz = contentData.find(q => q.category === 'question' && q.title.trim() === currentBook.title.trim());
+        if(linkedQuiz) {
+            linkedQuiz.questions = newQuestions;
+            // Eğer başlık değiştiyse quiz başlığını da güncelle
+            linkedQuiz.title = currentBook.title;
+        } else if(newQuestions.length > 0) {
+            // Quiz yoksa ama soru eklendiyse yeni quiz oluştur
+            contentData.push({
+                id: Date.now().toString(),
+                category: 'question',
+                title: currentBook.title,
+                questions: newQuestions,
+                completed: false
+            });
+        }
+    }
+
+    saveToDB();
+    document.getElementById('editContentModal').style.display = 'none';
+    showToast("İçerik Başarıyla Güncellendi!");
+    
+    // Sayfayı yenile (Değişiklikleri göster)
+    // Biraz bekleyip yeniden açıyoruz ki veriler otursun
+    setTimeout(() => openBook(currentBook), 100);
+}
+
+function importData(input) {
+    const file = input.files[0]; 
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            // Dosyayı oku (Hem eski hem yeni formatı destekle)
+            let json;
+            try { json = JSON.parse(e.target.result); } catch (parseErr) { return alert("Dosya hatalı!"); }
+            
+            if(!currentUser) return alert("Lütfen giriş yapın.");
+            const d = masterDB[currentUser].data;
+
+            // Veriyi güvenli yükle
+            const safeLoad = (val) => {
+                if (typeof val === 'string') { try { return JSON.parse(val); } catch(err) { return []; } }
+                return val || [];
+            };
+
+            if (Array.isArray(json)) { d.contentData = json; } // Eski Format
+            else if (typeof json === 'object') { // Yeni Format
+                if (json.data) d.contentData = safeLoad(json.data);
+                else if (json.contentData) d.contentData = safeLoad(json.contentData);
+                
+                if (json.stats) d.userStats = safeLoad(json.stats);
+                if (json.unknowns) d.userUnknownWords = safeLoad(json.unknowns);
+                if (json.knowns) d.userKnownVocabulary = safeLoad(json.knowns);
+                if (json.favorites) d.userFavorites = safeLoad(json.favorites);
+                if (json.activityLog) d.userActivityLog = safeLoad(json.activityLog);
+            }
+
+            saveMasterDB();
+            buildGlobalDictionary();
+            showToast("Yedek başarıyla yüklendi!");
+            setTimeout(() => location.reload(), 1000); // Sayfayı yenile
+
+        } catch(err) { 
+            console.error(err); alert("Yükleme hatası: " + err.message); 
+        }
+    }; 
+    input.value = ''; 
+    reader.readAsText(file);
+}
+/* --- OTOMATİK KAYIT VE GÜVENLİK SİSTEMİ --- */
+
+// 1. PERİYODİK OTOMATİK KAYIT (Her 5 Saniyede Bir)
+setInterval(function() {
+    if (currentUser && masterDB[currentUser]) {
+        saveToDB(); // Veriyi LocalStorage'a işle
+        
+        // Opsiyonel: Konsola bilgi ver (Geliştirici araçlarında görünür)
+        // console.log("Otomatik kayıt yapıldı: " + new Date().toLocaleTimeString());
+        
+        // Görsel Geri Bildirim (Sağ alt köşede küçük bir yanıp sönme)
+        let indicator = document.getElementById('autoSaveIndicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'autoSaveIndicator';
+            indicator.style.position = 'fixed';
+            indicator.style.bottom = '10px';
+            indicator.style.right = '10px';
+            indicator.style.width = '10px';
+            indicator.style.height = '10px';
+            indicator.style.borderRadius = '50%';
+            indicator.style.backgroundColor = '#27ae60'; // Yeşil
+            indicator.style.zIndex = '9999';
+            indicator.style.transition = 'opacity 0.5s';
+            indicator.style.opacity = '0';
+            indicator.title = "Otomatik Kayıt Aktif";
+            document.body.appendChild(indicator);
+        }
+        
+        // Işığı yak ve söndür
+        indicator.style.opacity = '1';
+        setTimeout(() => { indicator.style.opacity = '0.2'; }, 1000);
+    }
+}, 5000); // 5000 ms = 5 saniye
+
+// 2. CTRL + S KISAYOLU (Manuel Yedekleme İndir)
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault(); // Tarayıcının standart kaydetme penceresini engelle
+        showToast("💾 Hızlı Yedekleme Başlatıldı...");
+        exportData(); // Bizim yedekleme fonksiyonunu çalıştır
+    }
+});
+
+// 3. ÇIKIŞ UYARISI (Sayfa Kapanırken Uyar)
+window.onbeforeunload = function(e) {
+    // Eğer sayfayı yeniliyorsanız veya kapatıyorsanız bu uyarı çıkar
+    const confirmationMessage = 'Yaptığınız değişiklikleri "Data Manager" üzerinden indirdiniz mi? İndirilmemiş veriler başka bilgisayara taşınamaz.';
+    
+    (e || window.event).returnValue = confirmationMessage; // Eski tarayıcılar için
+    return confirmationMessage;
+};
 </script>
 </body>
 </html>
