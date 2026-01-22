@@ -923,6 +923,7 @@ body {
             <div class="admin-box-title">💾 Sistem Yedekleme</div>
             <div class="backup-actions">
                 <button class="backup-btn dl-btn" onclick="exportData()">İndir (.json)</button>
+                <button class="backup-btn" style="background:#8e44ad; color:white;" onclick="downloadDataJsFormat()">📦 Data.js Olarak İndir</button>
                 <button class="backup-btn ul-btn" onclick="document.getElementById('restoreFile').click()">Yükle</button>
                 <button class="backup-btn" style="background:#8e44ad;" onclick="exportSmartTXT()">📄 Tüm Seti Al (.txt)</button>
                 <input type="file" id="restoreFile" style="display:none;" accept=".json" onchange="importData(this)">
@@ -1057,6 +1058,18 @@ let currentBook=null;
 let pageIndex=0; 
 let isTrMode=false; 
 let quizAnswers={};
+let lastReadingState = null; // Reading durumunu saklar
+let pendingQuizState = null; // Test durumunu saklar
+function saveQuizStateBeforeLeaving() {
+    if(currentCategory === 'question' && currentBook && currentBook.questions) {
+        pendingQuizState = {
+            quizId: currentBook.id,
+            quizAnswers: {...quizAnswers},
+            questionIndex: pageIndex,
+            quizTime: currentQuizTime
+        };
+    }
+}
 
 // --- GİRİŞ VE KAYIT SİSTEMİ ---
 function initSystem() {
@@ -2044,45 +2057,87 @@ function updateCompleteButton() {
     
     if(!btnComp) return;
 
-    // Quiz butonunu her zaman gizle (Tek buton kuralı)
-    if(btnQuiz) btnQuiz.style.display = 'none';
-
     // Bağlı test var mı kontrol et
     const currentTitleClean = currentBook.title.trim().toLowerCase();
     const linkedQuiz = contentData.find(q => q.category === 'question' && q.title.trim().toLowerCase() === currentTitleClean);
 
-    // SENARYO 1: Testi Var
-    if (linkedQuiz) {
-        if (linkedQuiz.completed) {
-            // Hem okuma hem test bitmiş
-            btnComp.innerHTML = "🎉 TEBRİKLER (Test Tamamlandı)";
-            btnComp.className = "action-btn-fixed btn-complete"; // Yeşil
-            btnComp.disabled = true;
-            btnComp.style.opacity = "0.7";
-        } else {
-            // Okuma bitti veya bitmedi ama sırada Test var
-            btnComp.innerHTML = "📝 OKUMAYI TAMAMLA VE TESTE GEÇ";
-            btnComp.className = "action-btn-fixed";
-            btnComp.style.background = "#e67e22"; // Turuncu (Action)
-            btnComp.style.color = "white";
-            btnComp.onclick = function() { handleCompleteAndQuiz(linkedQuiz.id); };
-        }
-    } 
-    // SENARYO 2: Testi Yok (Sadece Okuma)
-    else {
+    // SENARYO 1: Devam eden test VARSA (pendingQuizState varsa)
+    if (pendingQuizState && pendingQuizState.quizId) {
+        // "TEST'E GERİ DÖN" butonunu göster
+        btnQuiz.style.display = 'flex';
+        btnQuiz.innerText = "↻ TEST'E GERİ DÖN";
+        btnQuiz.style.background = "#9b59b6";
+        btnQuiz.onclick = function() { 
+            returnToQuizFromReading();
+        };
+      
+        // Tamamlama butonunu da göster (normal durumda)
         if (currentBook.completed) {
             btnComp.innerHTML = "✅ OKUMA TAMAMLANDI";
             btnComp.className = "action-btn-fixed btn-complete";
-            btnComp.onclick = null; // İşlevsiz
+            btnComp.onclick = null;
         } else {
             btnComp.innerHTML = "✅ OKUMAYI TAMAMLA";
             btnComp.className = "action-btn-fixed btn-complete";
             btnComp.onclick = function() { markAsCompleted(); };
         }
+        btnComp.style.display = 'flex';
     }
-    
-    // Butonu göster
-    btnComp.style.display = 'flex';
+    // SENARYO 2: Test var ama devam eden yoksa
+    else if (linkedQuiz) {
+        if (linkedQuiz.completed) {
+            // Hem okuma hem test bitmiş
+            btnComp.innerHTML = "🎉 TEBRİKLER (Test Tamamlandı)";
+            btnComp.className = "action-btn-fixed btn-complete";
+            btnComp.disabled = true;
+            btnComp.style.opacity = "0.7";
+            btnComp.onclick = null;
+            btnComp.style.display = 'flex';
+            
+            // Quiz butonunu "TEKRAR ÇÖZ" yap
+            btnQuiz.style.display = 'flex';
+            btnQuiz.innerText = "↺ TESTİ TEKRAR ÇÖZ";
+            btnQuiz.style.background = "#7f8c8d";
+            btnQuiz.onclick = function() { 
+                switchFromReadingToQuiz(linkedQuiz.id);
+            };
+        } else {
+            // Okuma bitti veya bitmedi ama sırada Test var
+            btnComp.innerHTML = "📝 OKUMAYI TAMAMLA VE TESTE GEÇ";
+            btnComp.className = "action-btn-fixed";
+            btnComp.style.background = "#e67e22";
+            btnComp.style.color = "white";
+            btnComp.style.display = 'flex';
+            
+            // 📌 KRİTİK: Direkt testi aç
+            btnComp.onclick = function() { 
+                saveReadingProgress();
+                switchFromReadingToQuiz(linkedQuiz.id);
+            };
+            
+            // Quiz butonunu da aç (ikinci buton)
+            btnQuiz.style.display = 'flex';
+            btnQuiz.innerText = "🧠 İLGİLİ TESTİ ÇÖZ";
+            btnQuiz.style.background = "#e67e22";
+            btnQuiz.onclick = function() { 
+                switchFromReadingToQuiz(linkedQuiz.id);
+            };
+        }
+    } 
+    // SENARYO 3: Testi Yok (Sadece Okuma)
+    else {
+        if (currentBook.completed) {
+            btnComp.innerHTML = "✅ OKUMA TAMAMLANDI";
+            btnComp.className = "action-btn-fixed btn-complete";
+            btnComp.onclick = null;
+        } else {
+            btnComp.innerHTML = "✅ OKUMAYI TAMAMLA";
+            btnComp.className = "action-btn-fixed btn-complete";
+            btnComp.onclick = function() { markAsCompleted(); };
+        }
+        btnComp.style.display = 'flex';
+        btnQuiz.style.display = 'none'; // Test butonunu gizle
+    }
 }
 
 // YENİ GEÇİŞ FONKSİYONU
@@ -2130,20 +2185,38 @@ function toggleLang(){
 }
 
 function switchFromReadingToQuiz(quizId) {
+    // Önce reading state'ini kaydet
+    saveReadingStateBeforeQuiz();
+    
     saveReadingProgress();
 
     // 1. Önce ID ile aramayı dene
     let targetQuiz = contentData.find(x => x.id == quizId);
 
     // 2. ID ile bulunamazsa, Başlık (Title) ile aramayı dene (Yedek Plan)
-    if (!targetQuiz && currentBook) {
-        const cleanTitle = currentBook.title.trim();
-        targetQuiz = contentData.find(x => x.category === 'question' && x.title.trim() === cleanTitle);
+    if (!targetQuiz) {
+        // Eğer currentBook yoksa, o an açık olan reading'i contentData'dan bul
+        let activeReading = currentBook;
+        if (!activeReading) {
+            // En son açılan reading'i bookHeaderTitle'dan bul
+            const currentTitle = document.getElementById('bookHeaderTitle').innerText;
+            activeReading = contentData.find(x => x.category === 'reading' && x.title === currentTitle);
+        }
+        
+        if (activeReading) {
+            const cleanTitle = activeReading.title.trim();
+            targetQuiz = contentData.find(x => x.category === 'question' && x.title.trim() === cleanTitle);
+        }
     }
 
     if (targetQuiz) {
         stopReadingTimer();
         currentCategory = 'question';
+        
+        // Quiz state'ini temizle (yeni başlıyor)
+        quizAnswers = {};
+        pageIndex = 0;
+        pendingQuizState = null;
         
         // Menü butonunu güncelle
         document.querySelectorAll('.nav-btn').forEach(b => {
@@ -2158,6 +2231,111 @@ function switchFromReadingToQuiz(quizId) {
         alert("Hata: İlgili test bulunamadı.\nReading başlığı (" + (currentBook ? currentBook.title : 'Bilinmiyor') + ") ile Test başlığının AYNI olduğundan emin olun.");
     }
 }
+/* --- QUESTION -> READING GERİ DÖNÜŞ SİSTEMİ --- */
+
+// Question'a geçerken reading state'ini kaydet
+function saveReadingStateBeforeQuiz() {
+    if (currentBook && currentCategory === 'reading') {
+        lastReadingState = {
+            bookId: currentBook.id,
+            pageIndex: pageIndex,
+            readingTime: activeReadingSeconds
+        };
+    }
+}
+
+// Reading'e geri dön
+function goBackToReading() {
+    if (!lastReadingState) {
+        alert("Önce bir reading açmalısınız.");
+        return;
+    }
+    
+    // Mevcut quiz durumunu kaydet
+    pendingQuizState = {
+        quizId: currentBook.id,
+        quizAnswers: {...quizAnswers},
+        questionIndex: pageIndex
+    };
+    
+    // Reading'i bul ve aç
+    const readingBook = contentData.find(b => b.id === lastReadingState.bookId);
+    if (!readingBook) {
+        alert("Reading bulunamadı!");
+        return;
+    }
+    
+    // State'leri geri yükle
+    currentBook = readingBook;
+    currentCategory = 'reading';
+    pageIndex = lastReadingState.pageIndex;
+    activeReadingSeconds = lastReadingState.readingTime || 0;
+    
+    // Arayüzü ayarla
+    document.getElementById('openBookView').style.display = 'flex';
+    document.getElementById('libraryGrid').style.display = 'none';
+    document.getElementById('libraryHeader').style.display = 'none';
+    document.getElementById('bookHeaderTitle').innerText = currentBook.title;
+    
+    // Reading'e özel araçları göster
+    document.getElementById('langToggle').style.display = 'block';
+    document.getElementById('ttsControls').style.display = 'flex';
+    document.getElementById('ttsSpeed').style.display = 'block';
+    document.getElementById('liveStats').style.display = 'flex';
+    document.querySelector('.nav-arrow.prev').style.display = 'flex';
+    document.querySelector('.nav-arrow.next').style.display = 'flex';
+    
+    // Reading'i render et
+    renderSpread();
+    startReadingTimer();
+    showToast("Reading'e dönüldü. Test'e geri dönmek için 'TEST'E DÖN' butonunu kullanın.");
+}
+
+// Reading'den tekrar quiz'e dön
+function returnToQuizFromReading() {
+    if (!pendingQuizState) {
+        alert("Devam eden test bulunamadı.");
+        return;
+    }
+    
+    // Quiz'i bul
+    let quizBook = contentData.find(q => 
+        q.category === 'question' && 
+        q.id === pendingQuizState.quizId
+    );
+    
+    if (!quizBook) {
+        // ID ile bulamazsa title ile dene
+        const quizBookByTitle = contentData.find(q => 
+            q.category === 'question' && 
+            q.title.trim() === currentBook.title.trim()
+        );
+        if (!quizBookByTitle) {
+            alert("İlgili test bulunamadı!");
+            return;
+        }
+        quizBook = quizBookByTitle;
+    }
+    
+    // Quiz state'lerini geri yükle
+    currentBook = quizBook;
+    currentCategory = 'question';
+    pageIndex = pendingQuizState.questionIndex || 0;
+    quizAnswers = pendingQuizState.quizAnswers || {};
+    
+    // Arayüzü ayarla
+    document.getElementById('bookHeaderTitle').innerText = currentBook.title;
+    document.querySelector('.nav-arrow.prev').style.display = 'none';
+    document.querySelector('.nav-arrow.next').style.display = 'none';
+    document.getElementById('langToggle').style.display = 'none';
+    document.getElementById('ttsControls').style.display = 'none';
+    document.getElementById('ttsSpeed').style.display = 'none';
+    
+    // Quiz'i render et
+    renderSpread();
+    startReadingTimer();
+}
+
 function markAsCompleted() { 
     if(!currentBook) return; 
 
@@ -2182,7 +2360,6 @@ function markAsCompleted() {
     renderSpread(); 
     renderLibrary(); // Yeşil tık için arayüzü güncelle
 }
-
 /* 7. FLASHCARDS & UNKNOWNS */
 function startFlashcardMode() { 
     let list = (currentCategory === 'favorites') ? userFavorites : userUnknownWords;
@@ -2286,9 +2463,17 @@ function renderQuizSingleMode(container) {
     let isAnswered = quizAnswers[qNum] ? true : false;
     let btnText = (pageIndex === qs.length - 1) ? "Testi Bitir" : "Sonraki Soru";
     
+    // YENİ: Reading'e dön butonu eklendi
     container.innerHTML = `
         <div class="quiz-centered-container">
             <div class="quiz-question-card">
+                <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                    <button onclick="goBackToReading()" style="padding:8px 15px; background:#3498db; color:white; border:none; border-radius:20px; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:5px;">
+                        ← Reading'e Dön
+                    </button>
+                    <div style="font-weight:600; color:#7f8c8d;">Soru ${qNum}/${qs.length}</div>
+                </div>
+                
                 <div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:${progress}%"></div></div>
                 <div class="quiz-q-text"><span style="color:var(--accent); margin-right:5px;">Soru ${qNum}:</span> ${q.text}</div>
                 <div class="quiz-options-area">${optsHtml}</div>
@@ -2342,6 +2527,9 @@ function finishQuizSingleMode(container) {
     } else {
         logActivity('quiz', currentBook.title, `Tekrar: ${correct}D / ${wrong}Y`, currentQuizTime, 0);
     }
+// Test tamamlandığında pendingQuizState'i temizle
+    pendingQuizState = null;
+    lastReadingState = null;
     currentBook.stats = { readingTime: 0, quizTime: currentQuizTime, score: score };
     saveToDB();
     userStats.totalCorrect = (userStats.totalCorrect || 0) + correct; 
@@ -2351,20 +2539,23 @@ function finishQuizSingleMode(container) {
     let color = score >= 70 ? '#27ae60' : (score >= 50 ? '#f39c12' : '#c0392b');
     container.style.justifyContent = "flex-start"; container.style.overflowY = "auto"; 
 
-    container.innerHTML = `
-        <div class="quiz-final-wrapper">
-            <div class="quiz-sticky-header">
-                <div style="display:flex; align-items:center; gap:20px;">
-                    <div class="result-circle-score" style="background:${color}; width:60px; height:60px; display:flex; justify-content:center; align-items:center; color:white; font-weight:bold; font-size:1.2rem; border-radius:50%; border:3px solid white;">%${score}</div>
-                    <div><h3 style="margin:0; color:var(--primary);">Test Sonucu</h3><div>✅ ${correct} D | ❌ ${wrong} Y</div></div>
-                </div>
-                <div><button onclick="closeBook()" style="padding:10px 25px; background:var(--primary); color:white; border:none; border-radius:50px; cursor:pointer;">ÇIKIŞ ➔</button></div>
+container.innerHTML = `
+    <div class="quiz-final-wrapper">
+        <div class="quiz-sticky-header">
+            <div style="display:flex; align-items:center; gap:20px;">
+                <div class="result-circle-score" style="background:${color}; width:60px; height:60px; display:flex; justify-content:center; align-items:center; color:white; font-weight:bold; font-size:1.2rem; border-radius:50%; border:3px solid white;">%${score}</div>
+                <div><h3 style="margin:0; color:var(--primary);">Test Sonucu</h3><div>✅ ${correct} D | ❌ ${wrong} Y</div></div>
             </div>
-            <div class="quiz-detail-content">
-                <div style="background:#fff; border-radius:20px; border:1px solid #eee; padding:10px;">${reviewHtml}</div>
+            <div style="display:flex; gap:10px;">
+                <button onclick="goBackToReading()" style="padding:10px 20px; background:#3498db; color:white; border:none; border-radius:50px; cursor:pointer;">← Reading'e Dön</button>
+                <button onclick="closeBook()" style="padding:10px 25px; background:var(--primary); color:white; border:none; border-radius:50px; cursor:pointer;">ÇIKIŞ ➔</button>
             </div>
         </div>
-    `;
+        <div class="quiz-detail-content">
+            <div style="background:#fff; border-radius:20px; border:1px solid #eee; padding:10px;">${reviewHtml}</div>
+        </div>
+    </div>
+`;
 }
 
 /* 9. STANDART FONKSİYONLAR (SÖZLÜK, ADMİN, VB.) */
@@ -3542,6 +3733,27 @@ window.onbeforeunload = function(e) {
     (e || window.event).returnValue = confirmationMessage; // Eski tarayıcılar için
     return confirmationMessage;
 };
+/* --- YENİ EKLENEN: DATA.JS ÇIKTI ALMA TUŞU --- */
+function downloadDataJsFormat() {
+    if (!contentData || contentData.length === 0) {
+        alert("Dışa aktarılacak veri yok! Önce içerik ekleyin.");
+        return;
+    }
+    // Veriyi data.js formatına çeviriyoruz
+    const jsContent = "const systemContent = " + JSON.stringify(contentData, null, 4) + ";";
+    
+    // Dosyayı oluşturuyoruz
+    const blob = new Blob([jsContent], { type: 'text/javascript;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data.js'; // Dosya adı data.js olacak
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast("data.js dosyası indirildi!");
+}
+/* ------------------------------------------- */
 </script>
 </body>
 </html>
